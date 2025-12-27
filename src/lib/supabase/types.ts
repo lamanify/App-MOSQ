@@ -117,6 +117,7 @@ export interface Database {
                     mosque_id: string | null;
                     name: string | null;
                     email: string | null;
+                    is_super_admin: boolean;
                     created_at: string;
                 };
                 Insert: {
@@ -124,6 +125,7 @@ export interface Database {
                     mosque_id?: string | null;
                     name?: string | null;
                     email?: string | null;
+                    is_super_admin?: boolean;
                     created_at?: string;
                 };
                 Update: {
@@ -131,6 +133,7 @@ export interface Database {
                     mosque_id?: string | null;
                     name?: string | null;
                     email?: string | null;
+                    is_super_admin?: boolean;
                     created_at?: string;
                 };
             };

@@ -17,7 +17,35 @@ import {
 import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 import { STATES, getZonesByState, type Zone } from "@/lib/zones";
-import { Check, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Loader2, Shuffle } from "lucide-react";
+
+// Predefined taglines for randomization
+const TAGLINE_OPTIONS = [
+    "Sentiasa berkhidmat untuk ummah setempat.",
+    "Pusat ibadah dan komuniti masyarakat.",
+    "Bersama membina komuniti berteraskan nilai Islam.",
+    "Masjid untuk ibadah, ilmu dan kebajikan.",
+    "Menyatukan jemaah melalui ibadah dan ilmu.",
+    "Ruang ibadah dan aktiviti komuniti setempat.",
+    "Mendekatkan masyarakat melalui peranan masjid.",
+    "Masjid sebagai nadi komuniti setempat.",
+    "Berperanan sebagai pusat ibadah dan kemasyarakatan.",
+    "Ibadah, ilmu dan khidmat untuk masyarakat.",
+];
+
+// Predefined about text for randomization
+const ABOUT_TEXT_OPTIONS = [
+    "Masjid ini berperanan sebagai pusat ibadah bagi penduduk setempat serta menjadi tempat penyampaian ilmu dan aktiviti kemasyarakatan. Pelbagai program dijalankan untuk mengimarahkan masjid dan mengeratkan hubungan jemaah.",
+    "Sebagai sebuah masjid komuniti, masjid ini menyediakan ruang untuk ibadah harian, program keagamaan dan aktiviti kemasyarakatan yang terbuka kepada semua lapisan masyarakat.",
+    "Masjid ini berfungsi sebagai pusat ibadah serta platform untuk aktiviti keagamaan dan sosial yang bertujuan memperkukuh hubungan sesama masyarakat setempat.",
+    "Selain menjadi tempat ibadah, masjid ini turut menganjurkan pelbagai aktiviti dan program yang menyokong pembangunan rohani serta kebajikan komuniti.",
+    "Masjid ini menjadi tempat pertemuan masyarakat untuk melaksanakan ibadah, mengikuti program keilmuan dan menyertai aktiviti yang memberi manfaat kepada jemaah.",
+    "Sebagai pusat ibadah setempat, masjid ini memainkan peranan penting dalam menyampaikan maklumat, menganjurkan program keagamaan dan menyokong aktiviti komuniti.",
+    "Masjid ini diwujudkan untuk memenuhi keperluan ibadah masyarakat setempat serta menjadi pusat aktiviti yang menyatukan jemaah melalui pelbagai program bermanfaat.",
+    "Dengan peranan sebagai pusat ibadah dan komuniti, masjid ini sentiasa berusaha menyediakan persekitaran yang kondusif untuk jemaah dan aktiviti kemasyarakatan.",
+    "Masjid ini berfungsi sebagai pusat ibadah harian serta penganjuran program keagamaan dan aktiviti sosial yang bertujuan memperkukuh ukhuwah dalam komuniti.",
+    "Sebagai institusi komuniti, masjid ini menjadi tempat ibadah, penyampaian ilmu dan pelaksanaan aktiviti yang menyokong keharmonian masyarakat setempat.",
+];
 
 // Form data type
 interface OnboardingData {
@@ -41,6 +69,8 @@ interface OnboardingData {
     facebook_url: string;
     instagram_url: string;
     telegram_url: string;
+    tiktok_url: string;
+    youtube_url: string;
     // Step 4
     first_announcement_title: string;
     first_announcement_content: string;
@@ -64,6 +94,8 @@ const initialData: OnboardingData = {
     facebook_url: "",
     instagram_url: "",
     telegram_url: "",
+    tiktok_url: "",
+    youtube_url: "",
     first_announcement_title: "",
     first_announcement_content: "",
 };
@@ -79,6 +111,23 @@ export default function OnboardingPage() {
     // Toggle states for Logo and Hero
     const [hasOwnLogo, setHasOwnLogo] = useState(true);
     const [hasOwnHero, setHasOwnHero] = useState(true);
+
+    // Index states for randomization
+    const [taglineIndex, setTaglineIndex] = useState(0);
+    const [aboutTextIndex, setAboutTextIndex] = useState(0);
+
+    // Randomize handlers
+    function handleRandomizeTagline() {
+        const nextIndex = (taglineIndex + 1) % TAGLINE_OPTIONS.length;
+        setTaglineIndex(nextIndex);
+        updateData("tagline", TAGLINE_OPTIONS[nextIndex]);
+    }
+
+    function handleRandomizeAboutText() {
+        const nextIndex = (aboutTextIndex + 1) % ABOUT_TEXT_OPTIONS.length;
+        setAboutTextIndex(nextIndex);
+        updateData("about_text", ABOUT_TEXT_OPTIONS[nextIndex]);
+    }
 
     // Get current user
     useEffect(() => {
@@ -191,6 +240,8 @@ export default function OnboardingPage() {
                     facebook_url: data.facebook_url || null,
                     instagram_url: data.instagram_url || null,
                     telegram_url: data.telegram_url || null,
+                    tiktok_url: data.tiktok_url || null,
+                    youtube_url: data.youtube_url || null,
                     is_published: true,
                 })
                 .select()
@@ -425,7 +476,18 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="form-label">Tagline</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="form-label">Tagline</Label>
+                                <button
+                                    type="button"
+                                    onClick={handleRandomizeTagline}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                                    title="Jana tagline secara rawak"
+                                >
+                                    <Shuffle size={12} />
+                                    Jana Idea
+                                </button>
+                            </div>
                             <Input
                                 placeholder="cth: Masjid Tumpuan Umat"
                                 value={data.tagline}
@@ -435,7 +497,18 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="form-label">Tentang Masjid</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="form-label">Tentang Masjid</Label>
+                                <button
+                                    type="button"
+                                    onClick={handleRandomizeAboutText}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                                    title="Jana teks secara rawak"
+                                >
+                                    <Shuffle size={12} />
+                                    Jana Idea
+                                </button>
+                            </div>
                             <Textarea
                                 placeholder="Ceritakan sedikit tentang masjid anda..."
                                 value={data.about_text}
@@ -674,6 +747,26 @@ export default function OnboardingPage() {
                                     placeholder="https://t.me/masjidanda"
                                     value={data.telegram_url}
                                     onChange={(e) => updateData("telegram_url", e.target.value)}
+                                    className="form-input"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="form-label">TikTok</Label>
+                                <Input
+                                    placeholder="https://tiktok.com/@masjidanda"
+                                    value={data.tiktok_url}
+                                    onChange={(e) => updateData("tiktok_url", e.target.value)}
+                                    className="form-input"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="form-label">YouTube</Label>
+                                <Input
+                                    placeholder="https://youtube.com/@masjidanda"
+                                    value={data.youtube_url}
+                                    onChange={(e) => updateData("youtube_url", e.target.value)}
                                     className="form-input"
                                 />
                             </div>

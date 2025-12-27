@@ -16,6 +16,7 @@ import {
     LogOut,
     Menu,
     X,
+    Shield,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -35,6 +36,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [mosque, setMosque] = useState<Mosque | null>(null);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
     useEffect(() => {
         const fetchMosque = async () => {
@@ -44,9 +46,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
             const { data: admin } = await supabase
                 .from("admins")
-                .select("mosque_id")
+                .select("mosque_id, is_super_admin")
                 .eq("id", user.id)
                 .single();
+
+            if (admin?.is_super_admin) {
+                setIsSuperAdmin(true);
+            }
 
             if (admin?.mosque_id) {
                 const { data: mosqueData } = await supabase
@@ -203,6 +209,36 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 })}
                             </div>
                         </div>
+
+                        {/* Super Admin Section - Only visible to super admins */}
+                        {isSuperAdmin && (
+                            <div>
+                                <p className="px-4 mb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Super Admin</p>
+                                <div className="space-y-1">
+                                    <Link
+                                        href="/admin/super-admin"
+                                        onClick={() => setSidebarOpen(false)}
+                                        className={`
+                                            relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium group min-h-[44px]
+                                            ${pathname === "/admin/super-admin"
+                                                ? "bg-gray-100 text-black"
+                                                : "text-gray-500 hover:text-black hover:bg-gray-50"
+                                            }
+                                        `}
+                                    >
+                                        {pathname === "/admin/super-admin" && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-black rounded-r-full" />
+                                        )}
+                                        <Shield
+                                            size={20}
+                                            strokeWidth={1.5}
+                                            className={pathname === "/admin/super-admin" ? "text-black" : "text-gray-400 group-hover:text-gray-600"}
+                                        />
+                                        <span className={pathname === "/admin/super-admin" ? "font-semibold" : ""}>Pengurusan Pengguna</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Mosque Preview Card */}
                         <div className="mt-8 px-4">

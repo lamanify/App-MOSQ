@@ -70,9 +70,9 @@ export default function HomePage() {
           <Image
             src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766798421/Mosq_7_vn5zgh.webp"
             alt="MOSQ Logo"
-            width={120}
-            height={40}
-            className="h-10 w-auto object-contain"
+            width={240}
+            height={80}
+            className="h-20 w-auto object-contain"
             priority
           />
         </Link>
