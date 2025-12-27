@@ -17,7 +17,7 @@ import {
 import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 import { STATES, getZonesByState, type Zone } from "@/lib/zones";
-import { Loader2, Save, Building2, CreditCard, Globe, Phone, Palette, Shuffle } from "lucide-react";
+import { Loader2, Save, Building2, CreditCard, Globe, Phone, Palette, Shuffle, Clock } from "lucide-react";
 import { revalidateMosqueData } from "@/app/actions/mosque";
 
 // Predefined taglines for randomization
