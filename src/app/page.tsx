@@ -96,7 +96,7 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-bold text-black tracking-tight leading-[1.1]">
-              Bina laman web masjid <span className="text-gray-400">dalam 5 minit.</span>
+              Bina laman web masjid <span className="bg-gradient-to-r from-[#D4AF37] to-[#B8860B] bg-clip-text text-transparent">dalam 5 minit.</span>
             </h1>
 
             <p className="text-xl text-gray-500 leading-relaxed max-w-lg">
@@ -110,7 +110,7 @@ export default function HomePage() {
                 "Hebahan Aktiviti & Kuliah"
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-gray-600">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <CheckCircle2 className="w-5 h-5 text-[#B8860B]" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -178,7 +178,7 @@ export default function HomePage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 text-lg bg-black hover:bg-gray-800 text-white rounded-xl mt-2"
+                  className="w-full h-12 text-lg bg-gradient-to-r from-[#D4AF37] to-[#B8860B] hover:opacity-90 text-white rounded-xl mt-2 transition-all shadow-lg shadow-orange-100"
                 >
                   {loading ? (
                     <>
