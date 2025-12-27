@@ -72,7 +72,7 @@ export default function HomePage() {
             alt="MOSQ Logo"
             width={240}
             height={80}
-            className="h-20 w-auto object-contain"
+            className="h-14 w-auto object-contain"
             priority
           />
         </Link>

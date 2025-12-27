@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             alt="MOSQ"
                             width={120}
                             height={64}
-                            className="h-16 w-auto object-contain"
+                            className="h-11 w-auto object-contain"
                         />
                         {mosque?.name && (
                             <span className="text-[10px] text-gray-500 truncate max-w-[140px] ml-1">{mosque.name}</span>
@@ -135,7 +135,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 alt="MOSQ"
                                 width={150}
                                 height={80}
-                                className="h-20 w-auto object-contain"
+                                className="h-14 w-auto object-contain"
                             />
                         </Link>
                     </div>
