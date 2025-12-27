@@ -87,7 +87,7 @@ export default async function HubungiKamiPage({ params }: Props) {
                             Kembali ke Utama
                         </Link>
                         <div className="max-w-2xl">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider mb-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 text-brand text-xs font-bold uppercase tracking-wider mb-6">
                                 <MapPin size={12} />
                                 Perhubungan
                             </div>

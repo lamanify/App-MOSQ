@@ -350,7 +350,7 @@ export function PublicMosquePage({
             <section id="hubungi" className="py-24 px-4 bg-gray-50/50">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center gap-4 mb-16">
-                        <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center text-green-600">
+                        <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand">
                             <MapPin size={24} />
                         </div>
                         <h2 className="text-4xl font-heading font-black text-gray-900 tracking-tight">Hubungi Kami</h2>
