@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 
 /**
  * Cache durations in seconds
@@ -36,7 +36,7 @@ export const CACHE_TAGS = {
  */
 export const getCachedMosqueBySlug = unstable_cache(
     async (slug: string) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         const { data: mosque, error } = await supabase
             .from("mosques")
             .select("*")
@@ -50,7 +50,7 @@ export const getCachedMosqueBySlug = unstable_cache(
 
         return mosque;
     },
-    ["mosque-by-slug", slug],
+    ["mosque-by-slug"],
     {
         revalidate: CACHE_DURATION.MEDIUM,
         tags: ["mosques"],
@@ -63,7 +63,7 @@ export const getCachedMosqueBySlug = unstable_cache(
  */
 export const getCachedMosqueMetadata = unstable_cache(
     async (slug: string) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         const { data: mosque, error } = await supabase
             .from("mosques")
             .select("id, name, slug, tagline, about_text, logo_url, hero_image_url, brand_color")
@@ -77,7 +77,7 @@ export const getCachedMosqueMetadata = unstable_cache(
 
         return mosque;
     },
-    ["mosque-metadata", slug],
+    ["mosque-metadata"],
     {
         revalidate: CACHE_DURATION.LONG,
         tags: ["mosques"],
@@ -89,7 +89,7 @@ export const getCachedMosqueMetadata = unstable_cache(
  */
 export const getCachedAnnouncements = unstable_cache(
     async (mosqueId: string, limit?: number) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         let query = supabase
             .from("announcements")
             .select("*")
@@ -104,7 +104,7 @@ export const getCachedAnnouncements = unstable_cache(
         const { data: announcements } = await query;
         return announcements || [];
     },
-    ["announcements", mosqueId, limit?.toString() || "all"],
+    ["announcements"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["announcements"],
@@ -116,7 +116,7 @@ export const getCachedAnnouncements = unstable_cache(
  */
 export const getCachedEvents = unstable_cache(
     async (mosqueId: string, limit?: number) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         let query = supabase
             .from("events")
             .select("*")
@@ -131,7 +131,7 @@ export const getCachedEvents = unstable_cache(
         const { data: events } = await query;
         return events || [];
     },
-    ["events", mosqueId, limit?.toString() || "all"],
+    ["events"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["events"],
@@ -143,7 +143,7 @@ export const getCachedEvents = unstable_cache(
  */
 export const getCachedCommittee = unstable_cache(
     async (mosqueId: string) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         const { data: committee } = await supabase
             .from("committee_members")
             .select("*")
@@ -152,7 +152,7 @@ export const getCachedCommittee = unstable_cache(
 
         return committee || [];
     },
-    ["committee", mosqueId],
+    ["committee"],
     {
         revalidate: CACHE_DURATION.LONG,
         tags: ["committee"],
@@ -164,7 +164,7 @@ export const getCachedCommittee = unstable_cache(
  */
 export const getAllMosqueSlugs = unstable_cache(
     async () => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         const { data: mosques } = await supabase
             .from("mosques")
             .select("slug")
@@ -184,7 +184,7 @@ export const getAllMosqueSlugs = unstable_cache(
  */
 export const getCachedAnnouncementBySlug = unstable_cache(
     async (mosqueId: string, slugOrId: string) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
 
         const { data: announcement } = await supabase
@@ -196,7 +196,7 @@ export const getCachedAnnouncementBySlug = unstable_cache(
 
         return announcement;
     },
-    ["announcement-by-slug", mosqueId, slugOrId],
+    ["announcement-by-slug"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["announcements"],
@@ -208,7 +208,7 @@ export const getCachedAnnouncementBySlug = unstable_cache(
  */
 export const getCachedEventBySlug = unstable_cache(
     async (mosqueId: string, slugOrId: string) => {
-        const supabase = await createClient();
+        const supabase = createStaticClient();
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
 
         const { data: event } = await supabase
@@ -220,7 +220,7 @@ export const getCachedEventBySlug = unstable_cache(
 
         return event;
     },
-    ["event-by-slug", mosqueId, slugOrId],
+    ["event-by-slug"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["events"],
