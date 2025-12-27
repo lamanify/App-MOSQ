@@ -1,4 +1,5 @@
-"use client";
+// Server component for AJK list
+
 
 import type { Mosque, CommitteeMember } from "@/lib/supabase/types";
 

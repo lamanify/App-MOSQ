@@ -1,11 +1,7 @@
-"use client";
-
-import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Mosque, Announcement, Event, CommitteeMember } from "@/lib/supabase/types";
-import { fetchPrayerTimes, getNextPrayer, type SimplePrayerTimes } from "@/lib/jakim";
-import { getZoneByCode } from "@/lib/zones";
+import type { SimplePrayerTimes } from "@/lib/jakim";
 import {
     MapPin,
     Phone,
@@ -13,16 +9,10 @@ import {
     Facebook,
     Instagram,
     Youtube,
-    Clock,
     Calendar,
     Heart,
     Info,
-    Sunrise,
-    Sun,
-    Sunset,
-    Moon,
     Bell,
-    // Restored imports
     ShieldCheck,
     ArrowRight,
     User,
@@ -32,12 +22,11 @@ import {
     Video,
 } from "lucide-react";
 
-
 import { WhatsAppIcon } from "./_components/WhatsAppIcon";
 import { PublicHeader } from "./_components/PublicHeader";
 import { PublicFooter } from "./_components/PublicFooter";
 import { BrandColorProvider } from "./_components/BrandColorProvider";
-
+import { PrayerTimesSection } from "./_components/PrayerTimesSection";
 
 interface PublicMosquePageProps {
     mosque: Mosque;
@@ -54,49 +43,12 @@ export function PublicMosquePage({
     committee,
     initialPrayerTimes = null,
 }: PublicMosquePageProps) {
-    const [prayerTimes, setPrayerTimes] = useState<SimplePrayerTimes | null>(initialPrayerTimes);
-    // Removed nextPrayer state, derived instead
-
-    // Initialize currentTime to null to avoid hydration mismatch
-    const [currentTime, setCurrentTime] = useState<Date | null>(null);
-
-    // Derived nextPrayer
-    const nextPrayer = useMemo(() => {
-        if (!prayerTimes || !currentTime) return null;
-        return getNextPrayer(prayerTimes)?.name || null;
-    }, [prayerTimes, currentTime]);
-
-    useEffect(() => {
-        // Only fetch client-side if no initial data and we have a zone code
-        // and we haven't set prayerTimes yet (though useState handles it initially)
-        if (!initialPrayerTimes && mosque.zone_code && !prayerTimes) {
-            fetchPrayerTimes(mosque.zone_code).then((times) => {
-                setPrayerTimes(times);
-            });
-        }
-    }, [mosque.zone_code, initialPrayerTimes, prayerTimes]);
-
-    useEffect(() => {
-        // Set initial time after mount to avoid hydration mismatch
-        // Using setTimeout to avoid "setState in effect" linter warning for synchronous updates
-        const timeout = setTimeout(() => setCurrentTime(new Date()), 0);
-
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => {
-            clearTimeout(timeout);
-            clearInterval(timer);
-        };
-    }, []);
-
     // Get brand color or default
     const brandColor = mosque.brand_color || "#4F46E5";
 
     return (
         <BrandColorProvider brandColor={brandColor}>
-            {/* Sticky Modern Header */}
+            {/* Sticky Modern Header - This is a client component */}
             <PublicHeader mosque={mosque} />
 
             {/* Immersive Hero Section */}
@@ -113,22 +65,22 @@ export function PublicMosquePage({
                 </div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 text-center mt-20">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand mb-8 animate-fade-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand mb-8">
                         <ShieldCheck size={14} strokeWidth={2} className="text-brand" />
                         <span className="text-sm font-bold tracking-wide">Portal Rasmi Masjid</span>
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-black text-gray-900 mb-6 leading-[0.9] tracking-tight animate-fade-up delay-100">
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-black text-gray-900 mb-6 leading-[0.9] tracking-tight">
                         {mosque.name}
                     </h1>
 
                     {mosque.tagline && (
-                        <p className="text-lg md:text-2xl text-gray-500 max-w-2xl mx-auto font-light leading-relaxed mb-10 animate-fade-up delay-200">
+                        <p className="text-lg md:text-2xl text-gray-500 max-w-2xl mx-auto font-light leading-relaxed mb-10">
                             {mosque.tagline}
                         </p>
                     )}
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up delay-300">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link
                             href="/pengumuman"
                             className="w-full sm:w-auto px-8 py-4 bg-brand text-white rounded-full font-bold text-lg hover:bg-brand/90 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-xl"
@@ -150,125 +102,13 @@ export function PublicMosquePage({
                 <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-50 to-transparent" />
             </section>
 
-            {/* Prayer Times - Premium Cards */}
-            {prayerTimes && (
-                <section id="info" className="relative z-20 -mt-24 px-4 pb-20">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-brand/10 p-2 shadow-sm">
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-                                {[
-                                    { name: "Subuh", time: prayerTimes.subuh, icon: Sunrise },
-                                    { name: "Syuruk", time: prayerTimes.syuruk, icon: Sun },
-                                    { name: "Zohor", time: prayerTimes.zohor, icon: Sun },
-                                    { name: "Asar", time: prayerTimes.asar, icon: Sun },
-                                    { name: "Maghrib", time: prayerTimes.maghrib, icon: Sunset },
-                                    { name: "Isyak", time: prayerTimes.isyak, icon: Moon },
-                                ].map((prayer) => {
-                                    const isNext = prayer.name === nextPrayer;
-
-                                    // Calculate Iqamah time (10 mins after)
-                                    const getIqamahTime = (timeStr: string) => {
-                                        try {
-                                            const [h, m] = timeStr.split(':').map(Number);
-                                            let newM = m + 10;
-                                            let newH = h;
-                                            if (newM >= 60) {
-                                                newM -= 60;
-                                                newH = (newH + 1) % 24;
-                                            }
-                                            // Handle converting specific times formats if necessary, but assuming HH:mm 24h from API
-                                            return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
-                                        } catch {
-                                            return timeStr;
-                                        }
-                                    };
-
-                                    return (
-                                        <div
-                                            key={prayer.name}
-                                            className={`relative group p-6 rounded-[2rem] transition-all duration-300 overflow-hidden min-h-[160px] flex flex-col justify-between text-left ${isNext
-                                                ? "bg-brand text-white scale-105 shadow-xl shadow-brand/20"
-                                                : "bg-white border border-brand/10"
-                                                }`}
-                                        >
-                                            {/* Top Row: Name & Icon */}
-                                            <div className="flex justify-between items-start w-full mb-2">
-                                                <p className={`text-sm font-bold uppercase tracking-wider ${isNext ? "text-emerald-100" : "text-gray-400"
-                                                    }`}>
-                                                    {prayer.name}
-                                                </p>
-                                                <div
-                                                    className={`p-2 rounded-xl transition-colors ${isNext ? "bg-white/20 text-white backdrop-blur-sm" : "bg-gray-50 text-gray-400 group-hover:bg-brand group-hover:text-white"}`}
-                                                >
-                                                    <prayer.icon size={20} strokeWidth={1.5} />
-                                                </div>
-                                            </div>
-
-                                            {/* Middle: Time */}
-                                            <div className="mt-auto">
-                                                <p className={`text-4xl lg:text-5xl font-heading font-black tracking-tight ${isNext ? "text-white" : "text-gray-900"
-                                                    }`}>
-                                                    {prayer.time}
-                                                </p>
-                                            </div>
-
-                                            {/* Bottom: Iqamah */}
-                                            <div className={`mt-4 pt-4 border-t flex items-center gap-2 ${isNext ? "border-white/20 text-blue-50" : "border-gray-100 text-gray-400"
-                                                }`}>
-                                                <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${isNext ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
-                                                    }`}>
-                                                    Iqamah
-                                                </div>
-                                                <p className="text-sm font-bold tabular-nums">
-                                                    {prayer.name === "Syuruk" ? "-" : getIqamahTime(prayer.time)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="flex flex-col md:flex-row items-center justify-between px-8 py-4 bg-gray-50/80 rounded-[2rem] mt-2 gap-4">
-                                <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
-                                    {currentTime && (
-                                        <div className="flex items-center gap-3 px-4 py-2 bg-brand/5 rounded-xl border border-brand/10">
-                                            <Clock size={16} className="animate-pulse text-brand" />
-                                            <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
-                                                <span className="text-sm font-bold text-gray-900 tabular-nums">
-                                                    {currentTime.toLocaleTimeString("ms-MY", {
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                        second: "2-digit",
-                                                        hour12: true
-                                                    })}
-                                                </span>
-                                                <span className="hidden md:block w-px h-3 bg-gray-200" />
-                                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                                    {currentTime.toLocaleDateString("ms-MY", {
-                                                        weekday: "long",
-                                                        day: "numeric",
-                                                        month: "long",
-                                                        year: "numeric"
-                                                    })}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                            Zon {mosque.zone_code}, {getZoneByCode(mosque.zone_code || "")?.state} • {prayerTimes.hijri}
-                                        </p>
-                                    </div>
-                                </div>
-                                <p className="text-xs font-medium text-gray-400">
-                                    Sumber: e-Solat JAKIM
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            {/* Prayer Times Section - Extracted client component */}
+            {initialPrayerTimes && (
+                <PrayerTimesSection
+                    prayerTimes={initialPrayerTimes}
+                    mosqueZoneCode={mosque.zone_code}
+                    brandColor={brandColor}
+                />
             )}
 
             {/* Announcements - Bento Grid Style */}
@@ -389,7 +229,7 @@ export function PublicMosquePage({
                                         <div className="space-y-4">
                                             {event.event_time && (
                                                 <div className="flex items-center gap-3 text-sm font-medium text-gray-600">
-                                                    <Clock size={18} strokeWidth={1.5} className="text-brand" />
+                                                    <Calendar size={18} strokeWidth={1.5} className="text-brand" />
                                                     <span>{event.event_time}</span>
                                                 </div>
                                             )}
@@ -420,7 +260,7 @@ export function PublicMosquePage({
                             <div>
                                 <h2 className="text-5xl md:text-6xl font-heading font-black mb-8 leading-tight">
                                     Infak untuk <br />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-mosq-gold to-yellow-200">
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] to-yellow-200">
                                         Saham Akhirat
                                     </span>
                                 </h2>
@@ -437,7 +277,6 @@ export function PublicMosquePage({
                                                 <p className="text-3xl md:text-4xl font-mono text-brand tracking-tight">
                                                     {mosque.bank_account_number}
                                                 </p>
-                                                {/* Copy button could go here */}
                                             </div>
                                             {mosque.bank_account_name && (
                                                 <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-white/5">

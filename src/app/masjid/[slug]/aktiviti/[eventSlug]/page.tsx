@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { PublicHeader } from "../../_components/PublicHeader";
 import { PublicFooter } from "../../_components/PublicFooter";
@@ -9,37 +8,26 @@ import Image from "next/image";
 import { Metadata } from "next";
 import { StructuredData } from "@/components/StructuredData";
 import { generateEventSchema } from "@/lib/structuredData";
+import { constructTenantMetadata } from "@/lib/seo";
+import { getCachedMosqueBySlug, getCachedMosqueMetadata, getCachedEventBySlug } from "@/lib/cache";
 
 interface Props {
     params: Promise<{ slug: string; eventSlug: string }>;
 }
 
-// Default MOSQ branding for SEO fallbacks
-import { constructTenantMetadata } from "@/lib/seo";
+// Enable ISR with revalidation every 60 seconds
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug, eventSlug } = await params;
-    const supabase = await createClient();
 
-    // Fetch mosque info for context
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("id, name, about_text, hero_image_url, logo_url")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
-
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug);
-
-    const { data: event } = await supabase
-        .from("events")
-        .select("*")
-        .or(`slug.eq.${eventSlug}${isUuid ? `,id.eq.${eventSlug}` : ""}`)
-        .single();
-
-    if (!event) return { title: "Program Tidak Dijumpai" };
-
+    // Use cached mosque metadata
+    const mosque = await getCachedMosqueMetadata(slug);
     if (!mosque) return { title: "Masjid Tidak Dijumpai" };
+
+    // Use cached event
+    const event = await getCachedEventBySlug(mosque.id, eventSlug);
+    if (!event) return { title: "Program Tidak Dijumpai" };
 
     return constructTenantMetadata({
         mosque,
@@ -54,27 +42,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AktivitiDetailPage({ params }: Props) {
     const { slug, eventSlug } = await params;
-    const supabase = await createClient();
 
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
+    // Use cached mosque data
+    const mosque = await getCachedMosqueBySlug(slug);
 
     if (!mosque) {
         notFound();
     }
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug);
-
-    const { data: event } = await supabase
-        .from("events")
-        .select("*")
-        .or(`slug.eq.${eventSlug}${isUuid ? `,id.eq.${eventSlug}` : ""}`)
-        .eq("mosque_id", mosque.id)
-        .single();
+    // Use cached event
+    const event = await getCachedEventBySlug(mosque.id, eventSlug);
 
     if (!event) {
         notFound();

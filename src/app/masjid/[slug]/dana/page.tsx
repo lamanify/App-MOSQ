@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PublicHeader } from "../_components/PublicHeader";
@@ -9,23 +8,19 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { StructuredData } from "@/components/StructuredData";
 import { generateWebPageSchema } from "@/lib/structuredData";
+import { constructTenantMetadata } from "@/lib/seo";
+import { getCachedMosqueBySlug, getCachedMosqueMetadata } from "@/lib/cache";
 
 interface Props {
     params: Promise<{ slug: string }>;
 }
 
-import { constructTenantMetadata } from "@/lib/seo";
+// Enable ISR with revalidation every 60 seconds
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const supabase = await createClient();
-
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("name, tagline, about_text, logo_url, hero_image_url")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
+    const mosque = await getCachedMosqueMetadata(slug);
 
     if (!mosque) {
         return { title: "Masjid Tidak Dijumpai" };
@@ -42,14 +37,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DanaPage({ params }: Props) {
     const { slug } = await params;
-    const supabase = await createClient();
 
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
+    // Use cached mosque data
+    const mosque = await getCachedMosqueBySlug(slug);
 
     if (!mosque) {
         notFound();

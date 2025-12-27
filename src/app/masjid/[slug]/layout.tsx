@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { createClient } from "@/lib/supabase/server";
 import { generateMosqueSchema } from "@/lib/structuredData";
 import { StructuredData } from "@/components/StructuredData";
+import { getCachedMosqueBySlug } from "@/lib/cache";
 
 // Default MOSQ branding for SEO
 const DEFAULT_FAVICON = "https://res.cloudinary.com/debi0yfq9/image/upload/v1766797441/Mosq_Logo_2_tv21jw.jpg";
@@ -64,15 +64,9 @@ export default async function TenantLayout({
     params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
-    const supabase = await createClient();
 
-    // Fetch minimal mosque data for base schema
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("id, slug, name, address, state, latitude, longitude, phone, email, google_maps_name")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
+    // Use cached mosque data instead of direct Supabase query
+    const mosque = await getCachedMosqueBySlug(slug);
 
     if (!mosque) {
         return <>{children}</>;

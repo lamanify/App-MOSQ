@@ -1,4 +1,5 @@
-"use client";
+// Server component for brand color injection
+
 
 import { ReactNode } from "react";
 

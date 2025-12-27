@@ -43,7 +43,7 @@ export function PublicHeader({ mosque }: PublicHeaderProps) {
         { name: "Aktiviti", href: "/aktiviti", icon: Calendar },
         { name: "AJK", href: "/ajk", icon: Users },
         { name: "Infak", href: "/dana", icon: Heart },
-        { name: "Hubungi", href: "/#hubungi", icon: Phone },
+        { name: "Hubungi", href: "/hubungi-kami", icon: Phone },
     ];
 
     return (
@@ -56,18 +56,14 @@ export function PublicHeader({ mosque }: PublicHeaderProps) {
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 group z-50 relative" onClick={() => setMobileMenuOpen(false)}>
-                        {mosque.logo_url ? (
+                        {mosque.logo_url && (
                             <Image
                                 src={mosque.logo_url}
                                 alt={mosque.name}
-                                width={48}
+                                width={160}
                                 height={48}
-                                className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shadow-sm bg-white"
+                                className="h-10 md:h-12 w-auto object-contain flex-shrink-0"
                             />
-                        ) : (
-                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-900 rounded-xl flex items-center justify-center text-white shadow-md">
-                                <MosqueIcon size={24} strokeWidth={1.5} />
-                            </div>
                         )}
                         <span className={`font-heading font-bold text-lg md:text-xl tracking-tight transition-colors truncate max-w-[200px] md:max-w-none ${scrolled || mobileMenuOpen ? "text-gray-900" : "text-gray-900"
                             }`}>

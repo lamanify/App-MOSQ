@@ -1,4 +1,5 @@
-"use client";
+// Server component for announcement list
+
 
 import type { Mosque, Announcement } from "@/lib/supabase/types";
 import Link from "next/link";

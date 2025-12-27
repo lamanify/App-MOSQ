@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { PublicHeader } from "../../_components/PublicHeader";
 import { PublicFooter } from "../../_components/PublicFooter";
@@ -10,38 +9,26 @@ import { Metadata } from "next";
 import { ShareButton } from "../_components/ShareButton";
 import { StructuredData } from "@/components/StructuredData";
 import { generateArticleSchema } from "@/lib/structuredData";
+import { constructTenantMetadata } from "@/lib/seo";
+import { getCachedMosqueBySlug, getCachedMosqueMetadata, getCachedAnnouncementBySlug } from "@/lib/cache";
 
 interface Props {
     params: Promise<{ slug: string; announcementSlug: string }>;
 }
 
-// Default MOSQ branding for SEO fallbacks
-import { constructTenantMetadata } from "@/lib/seo";
+// Enable ISR with revalidation every 60 seconds
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug, announcementSlug } = await params;
-    const supabase = await createClient();
 
-    // Fetch mosque info for context
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("id, name, about_text, hero_image_url, logo_url")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
-
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(announcementSlug);
-
-    const { data: announcement } = await supabase
-        .from("announcements")
-        .select("id, title, content, created_at")
-        .eq("mosque_id", mosque?.id) // Use mosque context for security
-        .or(`slug.eq.${announcementSlug}${isUuid ? `,id.eq.${announcementSlug}` : ""}`)
-        .single();
-
-    if (!announcement) return { title: "Hebahan Tidak Dijumpai" };
-
+    // Use cached mosque metadata
+    const mosque = await getCachedMosqueMetadata(slug);
     if (!mosque) return { title: "Masjid Tidak Dijumpai" };
+
+    // Use cached announcement
+    const announcement = await getCachedAnnouncementBySlug(mosque.id, announcementSlug);
+    if (!announcement) return { title: "Hebahan Tidak Dijumpai" };
 
     return constructTenantMetadata({
         mosque,
@@ -55,27 +42,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AnnouncementDetailPage({ params }: Props) {
     const { slug, announcementSlug } = await params;
-    const supabase = await createClient();
 
-    const { data: mosque } = await supabase
-        .from("mosques")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
+    // Use cached mosque data
+    const mosque = await getCachedMosqueBySlug(slug);
 
     if (!mosque) {
         notFound();
     }
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(announcementSlug);
-
-    const { data: announcement } = await supabase
-        .from("announcements")
-        .select("*")
-        .or(`slug.eq.${announcementSlug}${isUuid ? `,id.eq.${announcementSlug}` : ""}`)
-        .eq("mosque_id", mosque.id)
-        .single();
+    // Use cached announcement
+    const announcement = await getCachedAnnouncementBySlug(mosque.id, announcementSlug);
 
     if (!announcement || !announcement.is_active) {
         notFound();
@@ -122,14 +98,13 @@ export default async function AnnouncementDetailPage({ params }: Props) {
                         <div className="flex items-center justify-between pt-8 border-t border-gray-50">
                             <div className="flex items-center gap-4">
                                 {mosque.logo_url && (
-                                    <div className="w-12 h-12 rounded-full border border-gray-100 p-2 bg-white overflow-hidden flex-shrink-0 relative">
-                                        <Image
-                                            src={mosque.logo_url}
-                                            alt={mosque.name}
-                                            fill
-                                            className="object-contain p-2"
-                                        />
-                                    </div>
+                                    <Image
+                                        src={mosque.logo_url}
+                                        alt={mosque.name}
+                                        width={160}
+                                        height={48}
+                                        className="h-12 w-auto object-contain flex-shrink-0"
+                                    />
                                 )}
                                 <div>
                                     <p className="text-sm font-bold text-gray-900">{mosque.name}</p>

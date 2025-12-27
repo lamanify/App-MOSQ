@@ -48,7 +48,7 @@ const ABOUT_TEXT_OPTIONS = [
     "Sebagai institusi komuniti, masjid ini menjadi tempat ibadah, penyampaian ilmu dan pelaksanaan aktiviti yang menyokong keharmonian masyarakat setempat.",
 ];
 
-type TabType = "profil" | "hubungan" | "dana" | "penampilan";
+type TabType = "profil" | "hubungan" | "dana" | "waktu_solat" | "penampilan";
 
 export default function TetapanPage() {
     const [mosque, setMosque] = useState<Mosque | null>(null);
@@ -116,7 +116,7 @@ export default function TetapanPage() {
         setLoading(false);
     }
 
-    function updateField(field: keyof MosqueUpdate, value: string | boolean | null) {
+    function updateField(field: keyof MosqueUpdate, value: string | boolean | number | null) {
         setFormData((prev) => ({ ...prev, [field]: value }));
     }
 
@@ -161,6 +161,7 @@ export default function TetapanPage() {
         { id: "profil" as TabType, label: "Profil Masjid", icon: Building2 },
         { id: "hubungan" as TabType, label: "Maklumat Hubungan", icon: Phone },
         { id: "dana" as TabType, label: "Dana Masjid", icon: CreditCard },
+        { id: "waktu_solat" as TabType, label: "Waktu Solat", icon: Clock },
         { id: "penampilan" as TabType, label: "Penampilan", icon: Palette },
     ];
 
@@ -534,6 +535,71 @@ export default function TetapanPage() {
                                 Muat naik gambar kod QR untuk memudahkan sumbangan
                             </p>
                         </div>
+                    </div>
+                )}
+
+                {/* Waktu Solat Tab */}
+                {activeTab === "waktu_solat" && (
+                    <div className="space-y-8">
+                        <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
+                            <p className="text-sm text-orange-700 font-medium">
+                                🕌 Tetapkan masa Iqamah (minit selepas waktu solat) untuk setiap waktu solat.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                            <input
+                                type="checkbox"
+                                id="iqamahCustomEnabled"
+                                checked={formData.iqamah_custom_enabled || false}
+                                onChange={(e) => updateField("iqamah_custom_enabled", e.target.checked)}
+                                className="w-6 h-6 rounded-lg border-gray-300 text-orange-600 focus:ring-orange-500"
+                            />
+                            <div>
+                                <Label htmlFor="iqamahCustomEnabled" className="text-lg font-bold text-gray-900">
+                                    Guna Masa Iqamah Tersuai
+                                </Label>
+                                <p className="text-sm text-gray-500">
+                                    Aktifkan untuk mengubahsuai masa Iqamah. Jika dinyahaktifkan, 10 minit akan digunakan secara automatik.
+                                </p>
+                            </div>
+                        </div>
+
+                        {formData.iqamah_custom_enabled && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                                {[
+                                    { id: "iqamah_subuh", label: "Subuh" },
+                                    { id: "iqamah_zohor", label: "Zohor" },
+                                    { id: "iqamah_asar", label: "Asar" },
+                                    { id: "iqamah_maghrib", label: "Maghrib" },
+                                    { id: "iqamah_isyak", label: "Isyak" },
+                                ].map((prayer) => (
+                                    <div key={prayer.id} className="space-y-2 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                                        <Label className="form-label text-gray-900">{prayer.label} (Minit)</Label>
+                                        <div className="relative group">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                max="60"
+                                                value={formData[prayer.id as keyof MosqueUpdate] ?? 10}
+                                                onChange={(e) => updateField(prayer.id as keyof MosqueUpdate, parseInt(e.target.value) || 0)}
+                                                className="form-input text-lg font-bold h-12 pr-12 focus:border-orange-500 focus:ring-orange-500"
+                                            />
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
+                                                min
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {!formData.iqamah_custom_enabled && (
+                            <div className="p-8 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                                <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                <p className="text-gray-500 font-medium">Masa Iqamah ditetapkan kepada 10 minit secara lalai.</p>
+                            </div>
+                        )}
                     </div>
                 )}
 

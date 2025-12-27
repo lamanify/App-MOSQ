@@ -53,7 +53,11 @@ export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTi
         const response = await fetch(
             `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zoneCode}`,
             {
-                next: { revalidate: 3600 }, // Cache for 1 hour
+                // Cache for 6 hours - prayer times don't change during the day
+                next: { revalidate: 21600 },
+                headers: {
+                    'Accept': 'application/json',
+                },
             }
         );
 

@@ -44,6 +44,12 @@ export interface Database {
                     donation_qr_url: string | null;
                     brand_color: string | null;
                     google_maps_name: string | null;
+                    iqamah_subuh: number;
+                    iqamah_zohor: number;
+                    iqamah_asar: number;
+                    iqamah_maghrib: number;
+                    iqamah_isyak: number;
+                    iqamah_custom_enabled: boolean;
                     is_published: boolean;
                     created_at: string;
                     updated_at: string;
@@ -75,6 +81,12 @@ export interface Database {
                     donation_qr_url?: string | null;
                     brand_color?: string | null;
                     google_maps_name?: string | null;
+                    iqamah_subuh?: number;
+                    iqamah_zohor?: number;
+                    iqamah_asar?: number;
+                    iqamah_maghrib?: number;
+                    iqamah_isyak?: number;
+                    iqamah_custom_enabled?: boolean;
                     is_published?: boolean;
                     created_at?: string;
                     updated_at?: string;
@@ -106,6 +118,12 @@ export interface Database {
                     donation_qr_url?: string | null;
                     brand_color?: string | null;
                     google_maps_name?: string | null;
+                    iqamah_subuh?: number;
+                    iqamah_zohor?: number;
+                    iqamah_asar?: number;
+                    iqamah_maghrib?: number;
+                    iqamah_isyak?: number;
+                    iqamah_custom_enabled?: boolean;
                     is_published?: boolean;
                     created_at?: string;
                     updated_at?: string;

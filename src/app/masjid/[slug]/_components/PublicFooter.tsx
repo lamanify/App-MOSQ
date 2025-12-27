@@ -1,4 +1,4 @@
-"use client";
+// Server component - no client-side JavaScript needed
 
 import Link from "next/link";
 import Image from "next/image";
@@ -17,18 +17,14 @@ export function PublicFooter({ mosque }: PublicFooterProps) {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
                     <div className="col-span-1 md:col-span-2">
                         <Link href="/" className="flex items-center gap-3 mb-6">
-                            {mosque.logo_url ? (
+                            {mosque.logo_url && (
                                 <Image
                                     src={mosque.logo_url}
                                     alt={mosque.name}
-                                    width={48}
+                                    width={160}
                                     height={48}
-                                    className="w-12 h-12 rounded-xl object-cover"
+                                    className="h-12 w-auto object-contain flex-shrink-0"
                                 />
-                            ) : (
-                                <div className="w-12 h-12 bg-brand rounded-xl flex items-center justify-center text-white shadow-sm shadow-brand/20">
-                                    <MosqueIcon size={24} strokeWidth={1.5} />
-                                </div>
                             )}
                             <span className="font-heading font-bold text-2xl text-gray-900 tracking-tight">
                                 {mosque.name}
@@ -49,7 +45,7 @@ export function PublicFooter({ mosque }: PublicFooterProps) {
                                 { name: "Aktiviti", href: "/aktiviti" },
                                 { name: "AJK", href: "/ajk" },
                                 { name: "Infak", href: "/dana" },
-                                { name: "Hubungi", href: "/#hubungi" },
+                                { name: "Hubungi", href: "/hubungi-kami" },
                             ].map((link) => (
                                 <li key={link.name}>
                                     <Link href={link.href} className="text-gray-500 hover:text-brand transition-colors">
@@ -116,9 +112,32 @@ export function PublicFooter({ mosque }: PublicFooterProps) {
                     </div>
                 </div>
             </div>
-            {/* Simple Copyright */}
-            <div className="border-t border-brand/5 mt-12 pt-8 text-center text-sm text-gray-400">
-                <p>&copy; {new Date().getFullYear()} {mosque.name}. Dikuasai oleh <a href="https://mosq.io" className="text-brand hover:underline">MOSQ</a>.</p>
+            {/* Footer Copyright Section */}
+            <div className="border-t border-brand/5 mt-12 pt-8">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                    {/* Left: Mosque Copyright */}
+                    <div className="text-sm text-gray-500 text-center md:text-left">
+                        <p>&copy; {new Date().getFullYear()} {mosque.name}. Hak Cipta Terpelihara.</p>
+                    </div>
+
+                    {/* Right: MOSQ Branding */}
+                    <div className="text-sm text-right text-center md:text-right">
+                        <p className="font-bold text-gray-700">
+                            Laman web ini disediakan secara percuma melalui inisiatif{' '}
+                            <a
+                                href="https://Mosq.io"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-brand hover:underline"
+                            >
+                                MOSQ
+                            </a>.
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                            MOSQ ialah inisiatif digital untuk masjid.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Floating Action Button for WhatsApp */}
