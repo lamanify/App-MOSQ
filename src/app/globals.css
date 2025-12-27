@@ -241,6 +241,30 @@
   .progress-step-inactive {
     @apply bg-gray-100 text-gray-400 border border-gray-200;
   }
+
+  /* Mobile-specific utilities */
+  .tap-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .text-gradient {

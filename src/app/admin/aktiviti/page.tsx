@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import type { Event, EventInsert } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -309,10 +310,11 @@ export default function AktivitiPage() {
                         <div key={event.id} className="glass-card overflow-hidden">
                             {event.featured_image_url && (
                                 <div className="aspect-video bg-gray-100 relative">
-                                    <img
+                                    <Image
                                         src={event.featured_image_url}
                                         alt={event.title}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        className="object-cover"
                                     />
                                 </div>
                             )}

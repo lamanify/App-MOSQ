@@ -8,7 +8,7 @@ interface InfoContentProps {
     announcements: Announcement[];
 }
 
-export function InfoContent({ mosque, announcements }: InfoContentProps) {
+export function InfoContent({ announcements }: InfoContentProps) {
     return (
         <div className="space-y-16">
             {/* Announcements List */}

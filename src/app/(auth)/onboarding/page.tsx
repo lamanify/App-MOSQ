@@ -225,6 +225,7 @@ export default function OnboardingPage() {
             toast.success("Tahniah! Laman web masjid anda telah dicipta!");
             router.push("/admin");
             router.refresh();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Onboarding error full details:", {
                 message: error.message,

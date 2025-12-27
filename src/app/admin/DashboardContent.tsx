@@ -70,26 +70,31 @@ export function DashboardContent({
             </div>
 
             {/* Info Banner */}
-            <div className="bg-blue-600 p-4 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-white shrink-0">
-                        <Megaphone size={16} />
+            <div className="bg-blue-600 text-white rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+                <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
-                    <p className="text-sm font-medium text-white">
-                        Lengkapkan profil masjid anda untuk paparan laman web yang lebih menarik.
-                    </p>
+                    <div>
+                        <p className="text-sm font-medium">
+                            Lengkapkan profil masjid anda untuk paparan laman web yang lebih menarik.
+                        </p>
+                        {/* Link removed as requested */}
+                    </div>
                 </div>
-                {!mosque.hero_image_url && (
-                    <Link href="/admin/tetapan">
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-semibold">
-                            Kemaskini Profil
-                        </Button>
-                    </Link>
-                )}
+                <Link href="/admin/tetapan">
+                    <Button
+                        className="bg-white text-blue-600 hover:bg-blue-50 border-0 whitespace-nowrap shrink-0 font-bold"
+                    >
+                        Kemaskini Profil
+                    </Button>
+                </Link>
             </div>
 
             {/* Stats Grid - Spendly Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {[
                     {
                         label: "Pengumuman Aktif",
@@ -120,18 +125,18 @@ export function DashboardContent({
                         trendLabel: "24/7"
                     }
                 ].map((stat, idx) => (
-                    <div key={idx} className="dashboard-card p-6 flex flex-col justify-between h-40">
+                    <div key={idx} className="dashboard-card p-4 sm:p-6 flex flex-col justify-between h-32 sm:h-40">
                         <div className="flex justify-between items-start">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{stat.label}</span>
-                            <div className="p-2 rounded-lg border border-gray-100 text-gray-400 bg-gray-50">
-                                <stat.icon size={16} strokeWidth={1.5} />
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider leading-tight">{stat.label}</span>
+                            <div className="p-1.5 sm:p-2 rounded-lg border border-gray-100 text-gray-400 bg-gray-50">
+                                <stat.icon size={14} strokeWidth={1.5} className="sm:w-4 sm:h-4" />
                             </div>
                         </div>
                         <div>
-                            <h3 className="text-3xl font-heading font-black text-black tracking-tight mb-2">
+                            <h3 className="text-2xl sm:text-3xl font-heading font-black text-black tracking-tight mb-1 sm:mb-2">
                                 {stat.value}
                             </h3>
-                            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-[10px] font-bold uppercase">
+                            <div className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-[10px] font-bold uppercase">
                                 <span>{stat.trend}</span>
                                 <span className="font-medium text-gray-500">{stat.trendLabel}</span>
                             </div>

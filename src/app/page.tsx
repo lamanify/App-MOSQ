@@ -1,144 +1,207 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Building2, Zap, Globe, Users, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (password.length < 6) {
+      toast.error("Kata laluan mestilah sekurang-kurangnya 6 aksara");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast.error("E-mel ini sudah didaftarkan");
+        } else {
+          toast.error(error.message);
+        }
+        return;
+      }
+
+      if (data.user) {
+        toast.success("Akaun berjaya didaftarkan!");
+        router.push("/onboarding");
+        router.refresh();
+      }
+    } catch {
+      toast.error("Ralat berlaku. Sila cuba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d]" />
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#F5C542_0%,transparent_50%)] opacity-10" />
-        </div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header */}
+      <header className="max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3">
+          <Image
+            src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766798421/Mosq_7_vn5zgh.webp"
+            alt="MOSQ Logo"
+            width={120}
+            height={40}
+            className="h-10 w-auto object-contain"
+            priority
+          />
+        </Link>
+        <Link href="/login" className="text-gray-600 hover:text-black font-medium transition-colors">
+          Log Masuk
+        </Link>
+      </header>
 
-        <header className="relative z-10 max-w-6xl mx-auto px-4 py-6">
-          <nav className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-mosq-gold rounded-xl flex items-center justify-center">
-                <span className="font-bold text-black">M</span>
-              </div>
-              <span className="font-bold text-white text-xl">MOSQ</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-white/80 hover:text-white">
-                Log Masuk
-              </Link>
-              <Link href="/signup">
-                <Button className="btn-primary">
-                  Daftar Percuma
-                </Button>
-              </Link>
-            </div>
-          </nav>
-        </header>
+      {/* Hero Section */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 flex items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center w-full py-12 lg:py-0">
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-24 md:py-32">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur rounded-full text-white/80 text-sm mb-6">
-              <Zap size={16} className="text-mosq-gold" />
+          {/* Left Column: Copy */}
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-gray-800 text-sm font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
               100% Percuma untuk semua masjid
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Bina Laman Web Masjid dalam
-              <span className="text-mosq-gold"> 5 Minit</span>
+
+            <h1 className="text-5xl lg:text-7xl font-bold text-black tracking-tight leading-[1.1]">
+              Bina laman web masjid <span className="text-gray-400">dalam 5 minit.</span>
             </h1>
-            <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-              Platform mudah untuk membina laman web masjid yang profesional.
-              Waktu solat automatik, pengumuman, aktiviti, dan banyak lagi.
+
+            <p className="text-xl text-gray-500 leading-relaxed max-w-lg">
+              Sistem pengurusan masjid yang lengkap dengan waktu solat, kutipan derma, dan info aktiviti. Semuanya percuma.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/signup">
-                <Button className="btn-primary text-lg px-8 py-4">
-                  Mula Sekarang — Percuma
-                  <ChevronRight size={20} className="ml-2" />
+
+            <div className="flex flex-col gap-3">
+              {[
+                "Paparan Waktu Solat Automatik",
+                "Sistem QR Kod Derma",
+                "Hebahan Aktiviti & Kuliah"
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3 text-gray-600">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Signup Form */}
+          <div className="w-full max-w-md mx-auto lg:ml-auto animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-2xl shadow-gray-200/50">
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-gray-900">Daftar Akaun Masjid</h3>
+                <p className="text-gray-500 mt-2">Masukan butiran di bawah untuk bermula</p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nama Penuh AJK</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Contoh: Ahmad Ali"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mel Rasmi / AJK</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="masjid@contoh.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Kata Laluan</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Minimum 6 aksara"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-12 text-lg bg-black hover:bg-gray-800 text-white rounded-xl mt-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Sedang memproses...
+                    </>
+                  ) : (
+                    "Daftar Sekarang — Percuma"
+                  )}
                 </Button>
-              </Link>
-              <Link href="/masjid/demo">
-                <Button variant="outline" className="text-white border-white/30 hover:bg-white/10 text-lg px-8 py-4">
-                  Lihat Contoh
-                </Button>
-              </Link>
+
+                <p className="text-center text-sm text-gray-500 mt-4">
+                  Dengan mendaftar, anda bersetuju dengan Terma & Syarat kami.
+                </p>
+              </form>
             </div>
           </div>
         </div>
-      </section>
+      </main>
 
-      {/* Features */}
-      <section className="max-w-6xl mx-auto px-4 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Semua yang masjid anda perlukan
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Direka khas untuk pentadbir masjid Malaysia. Mudah, cepat, dan profesional.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            {
-              icon: Building2,
-              title: "Laman Web Profesional",
-              description: "Template cantik dan responsif yang sesuai untuk semua peranti.",
-            },
-            {
-              icon: Globe,
-              title: "Waktu Solat Automatik",
-              description: "Integrasi JAKIM e-Solat untuk paparan waktu solat yang tepat.",
-            },
-            {
-              icon: Users,
-              title: "Pengumuman & Aktiviti",
-              description: "Urus dan kongsi berita masjid dengan mudah.",
-            },
-          ].map((feature) => (
-            <div key={feature.title} className="glass-card p-8">
-              <div className="p-3 bg-mosq-gold/20 rounded-2xl w-fit mb-4">
-                <feature.icon size={28} className="text-mosq-gold-dark" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600">{feature.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="max-w-6xl mx-auto px-4 py-24">
-        <div className="glass-card-dark p-12 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Mulakan Sekarang — 100% Percuma
-          </h2>
-          <p className="text-white/70 mb-8 max-w-xl mx-auto">
-            Tiada kad kredit diperlukan. Cipta laman web masjid anda dalam beberapa minit.
-          </p>
-          <Link href="/signup">
-            <Button className="btn-primary text-lg px-8 py-4">
-              Daftar Sekarang
-              <ChevronRight size={20} className="ml-2" />
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-mosq-gold rounded-lg flex items-center justify-center">
-                <span className="font-bold text-black text-sm">M</span>
-              </div>
-              <span className="font-semibold text-gray-900">MOSQ</span>
-            </div>
-            <p className="text-gray-500 text-sm">
-              © 2024 MOSQ. Platform pembina laman web masjid percuma.
-            </p>
-          </div>
-        </div>
+      {/* Simple Footer */}
+      <footer className="py-6 text-center text-gray-400 text-sm">
+        <p>&copy; {new Date().getFullYear()} MOSQ. Hak Cipta Terpelihara.</p>
       </footer>
     </div>
   );

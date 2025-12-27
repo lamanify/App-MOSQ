@@ -1,14 +1,44 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { PublicHeader } from "../_components/PublicHeader";
 import { PublicFooter } from "../_components/PublicFooter";
 import { BrandColorProvider } from "../_components/BrandColorProvider";
 import { InfoContent } from "./InfoContent";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
+import { StructuredData } from "@/components/StructuredData";
+import { generateWebPageSchema } from "@/lib/structuredData";
 
 interface Props {
     params: Promise<{ slug: string }>;
+}
+
+import { constructTenantMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params;
+    const supabase = await createClient();
+
+    const { data: mosque } = await supabase
+        .from("mosques")
+        .select("name, tagline, about_text, logo_url, hero_image_url")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .single();
+
+    if (!mosque) {
+        return { title: "Masjid Tidak Dijumpai" };
+    }
+
+    return constructTenantMetadata({
+        mosque,
+        slug,
+        path: "/pengumuman",
+        title: `Pengumuman & Hebahan | ${mosque.name}`,
+        description: mosque.about_text?.slice(0, 160) || mosque.tagline || `Ikuti perkembangan terkini, hebahan rasmi, dan maklumat terbaru daripada ${mosque.name}.`,
+    });
 }
 
 export default async function PengumumanPage({ params }: Props) {
@@ -33,18 +63,28 @@ export default async function PengumumanPage({ params }: Props) {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
+    // Generate Structured Data
+    const jsonLd = generateWebPageSchema(mosque, {
+        name: `Pengumuman & Hebahan ${mosque.name}`,
+        description: `Ikuti perkembangan terkini, hebahan rasmi, dan maklumat terbaru daripada ${mosque.name}.`,
+        path: "/pengumuman"
+    });
+
     return (
         <BrandColorProvider brandColor={mosque.brand_color} className="bg-white">
+            <StructuredData data={jsonLd} />
             <PublicHeader mosque={mosque} />
 
             <main className="pt-24 min-h-[calc(100vh-80px)]">
                 {/* Hero section */}
                 <section className="relative h-[400px] md:h-[500px] flex items-center bg-brand/5 overflow-hidden border-b border-brand/10">
                     <div className="absolute inset-0 w-full h-full opacity-[0.07]">
-                        <img
+                        <Image
                             src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766630810/APP_1_vti8y3.webp"
                             alt=""
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            priority
                         />
                     </div>
 

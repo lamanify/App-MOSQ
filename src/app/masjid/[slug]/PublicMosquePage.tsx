@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Mosque, Announcement, Event, CommitteeMember } from "@/lib/supabase/types";
@@ -10,37 +10,34 @@ import {
     MapPin,
     Phone,
     Mail,
-
     Facebook,
     Instagram,
     Youtube,
-    Video,
-    Send,
-    Calendar,
     Clock,
-    User,
-    CreditCard,
-    Users,
-    Megaphone,
-    ChevronRight,
-    ArrowRight,
-    ExternalLink,
-    Info,
+    Calendar,
     Heart,
-    ShieldCheck,
-    Landmark as MosqueIcon,
+    Info,
     Sunrise,
     Sun,
     Sunset,
     Moon,
     Bell,
+    // Restored imports
+    ShieldCheck,
+    ArrowRight,
+    User,
+    Users,
+    ChevronRight,
+    Send,
+    Video,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 
 import { WhatsAppIcon } from "./_components/WhatsAppIcon";
 import { PublicHeader } from "./_components/PublicHeader";
 import { PublicFooter } from "./_components/PublicFooter";
 import { BrandColorProvider } from "./_components/BrandColorProvider";
+
 
 interface PublicMosquePageProps {
     mosque: Mosque;
@@ -58,66 +55,44 @@ export function PublicMosquePage({
     initialPrayerTimes = null,
 }: PublicMosquePageProps) {
     const [prayerTimes, setPrayerTimes] = useState<SimplePrayerTimes | null>(initialPrayerTimes);
-    const [nextPrayer, setNextPrayer] = useState<string | null>(null);
+    // Removed nextPrayer state, derived instead
 
+    // Initialize currentTime to null to avoid hydration mismatch
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
+    // Derived nextPrayer
+    const nextPrayer = useMemo(() => {
+        if (!prayerTimes || !currentTime) return null;
+        return getNextPrayer(prayerTimes)?.name || null;
+    }, [prayerTimes, currentTime]);
+
     useEffect(() => {
-        // If we have initial data, use it to set next prayer immediately
-        if (initialPrayerTimes) {
-            setPrayerTimes(initialPrayerTimes); // Ensure state is synced
-            const next = getNextPrayer(initialPrayerTimes);
-            setNextPrayer(next?.name || null);
-        } else if (mosque.zone_code) {
-            // Only fetch client-side if no initial data
+        // Only fetch client-side if no initial data and we have a zone code
+        // and we haven't set prayerTimes yet (though useState handles it initially)
+        if (!initialPrayerTimes && mosque.zone_code && !prayerTimes) {
             fetchPrayerTimes(mosque.zone_code).then((times) => {
                 setPrayerTimes(times);
-                if (times) {
-                    const next = getNextPrayer(times);
-                    setNextPrayer(next?.name || null);
-                }
             });
         }
-
-        const interval = setInterval(() => {
-            if (prayerTimes) {
-                const next = getNextPrayer(prayerTimes);
-                setNextPrayer(next?.name || null);
-            }
-        }, 60000);
-
-        return () => {
-            clearInterval(interval);
-        };
-    }, [mosque.zone_code, prayerTimes, initialPrayerTimes]);
+    }, [mosque.zone_code, initialPrayerTimes, prayerTimes]);
 
     useEffect(() => {
-        setCurrentTime(new Date());
+        // Set initial time after mount to avoid hydration mismatch
+        // Using setTimeout to avoid "setState in effect" linter warning for synchronous updates
+        const timeout = setTimeout(() => setCurrentTime(new Date()), 0);
+
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
-        return () => clearInterval(timer);
+
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(timer);
+        };
     }, []);
 
     // Get brand color or default
     const brandColor = mosque.brand_color || "#4F46E5";
-
-    // Generate a slightly darker color for hover states
-    const adjustColorBrightness = (hex: string, percent: number): string => {
-        const num = parseInt(hex.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) + amt;
-        const G = (num >> 8 & 0x00FF) + amt;
-        const B = (num & 0x0000FF) + amt;
-        return "#" + (0x1000000 +
-            (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-            (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-            (B < 255 ? (B < 1 ? 0 : B) : 255)
-        ).toString(16).slice(1);
-    };
-
-    const brandColorDark = adjustColorBrightness(brandColor, -15);
-    const brandColorLight = adjustColorBrightness(brandColor, 40);
 
     return (
         <BrandColorProvider brandColor={brandColor}>
@@ -126,14 +101,14 @@ export function PublicMosquePage({
 
             {/* Immersive Hero Section */}
             <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-white">
-                <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-[1.02] opacity-20"
-                    style={{
-                        backgroundImage: mosque.hero_image_url
-                            ? `url(${mosque.hero_image_url})`
-                            : "url('https://res.cloudinary.com/debi0yfq9/image/upload/v1766630810/APP_1_vti8y3.webp')",
-                    }}
-                >
+                <div className="absolute inset-0 overflow-hidden">
+                    <Image
+                        src={mosque.hero_image_url || "https://res.cloudinary.com/debi0yfq9/image/upload/v1766630810/APP_1_vti8y3.webp"}
+                        alt={mosque.name}
+                        fill
+                        className="object-cover object-center opacity-20 transition-transform duration-1000 scale-[1.02]"
+                        priority
+                    />
                     <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/30 to-white" />
                 </div>
 
@@ -188,7 +163,7 @@ export function PublicMosquePage({
                                     { name: "Asar", time: prayerTimes.asar, icon: Sun },
                                     { name: "Maghrib", time: prayerTimes.maghrib, icon: Sunset },
                                     { name: "Isyak", time: prayerTimes.isyak, icon: Moon },
-                                ].map((prayer, idx) => {
+                                ].map((prayer) => {
                                     const isNext = prayer.name === nextPrayer;
 
                                     // Calculate Iqamah time (10 mins after)
@@ -203,7 +178,7 @@ export function PublicMosquePage({
                                             }
                                             // Handle converting specific times formats if necessary, but assuming HH:mm 24h from API
                                             return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
-                                        } catch (e) {
+                                        } catch {
                                             return timeStr;
                                         }
                                     };
@@ -316,19 +291,19 @@ export function PublicMosquePage({
                         </div>
 
                         <div className="bento-grid">
-                            {announcements.map((announcement, idx) => (
+                            {announcements.map((announcement, index) => (
                                 <Link
                                     key={announcement.id}
                                     href={`/pengumuman/${announcement.slug || announcement.id}`}
                                     className={`
                                         group relative p-8 rounded-[2rem] border border-gray-100 bg-white hover:border-gray-200 transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] block
-                                        ${idx === 0 ? 'md:col-span-2 bg-gradient-to-br from-gray-50 to-white' : ''}
+                                        ${index === 0 ? 'md:col-span-2 bg-gradient-to-br from-gray-50 to-white' : ''}
                                     `}
                                 >
                                     <div className="flex justify-between items-start mb-6">
                                         <span className={`
                                             px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5
-                                            ${idx === 0 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}
+                                            ${index === 0 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}
                                         `}>
                                             <Bell size={10} strokeWidth={2} />
                                             Pengumuman
@@ -338,7 +313,7 @@ export function PublicMosquePage({
                                         </span>
                                     </div>
 
-                                    <h3 className={`font-heading font-bold text-gray-900 mb-4 group-hover:text-brand transition-colors ${idx === 0 ? 'text-3xl' : 'text-xl'}`}>
+                                    <h3 className={`font-heading font-bold text-gray-900 mb-4 group-hover:text-brand transition-colors ${index === 0 ? 'text-3xl' : 'text-xl'}`}>
                                         {announcement.title}
                                     </h3>
 
@@ -383,10 +358,11 @@ export function PublicMosquePage({
                                 <Link href={`/aktiviti/${event.slug || event.id}`} key={event.id} className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 block">
                                     <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                                         {event.featured_image_url ? (
-                                            <img
+                                            <Image
                                                 src={event.featured_image_url}
                                                 alt={event.title}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition-transform duration-700"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-brand-dark p-8 text-center border-b border-brand/20">

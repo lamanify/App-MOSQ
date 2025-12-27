@@ -83,17 +83,32 @@ export function PublicFooter({ mosque }: PublicFooterProps) {
 
                         <div className="flex gap-4 mt-8">
                             {mosque.facebook_url && (
-                                <a href={mosque.facebook_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-all">
+                                <a
+                                    href={mosque.facebook_url.startsWith('http') ? mosque.facebook_url : `https://${mosque.facebook_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-all"
+                                >
                                     <Facebook size={18} strokeWidth={1.5} />
                                 </a>
                             )}
                             {mosque.instagram_url && (
-                                <a href={mosque.instagram_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition-all">
+                                <a
+                                    href={mosque.instagram_url.startsWith('http') ? mosque.instagram_url : `https://${mosque.instagram_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition-all"
+                                >
                                     <Instagram size={18} strokeWidth={1.5} />
                                 </a>
                             )}
                             {mosque.telegram_url && (
-                                <a href={mosque.telegram_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-500 hover:text-white transition-all">
+                                <a
+                                    href={mosque.telegram_url.startsWith('http') ? mosque.telegram_url : `https://${mosque.telegram_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-500 hover:text-white transition-all"
+                                >
                                     <Send size={18} strokeWidth={1.5} />
                                 </a>
                             )}

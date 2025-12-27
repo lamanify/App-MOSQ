@@ -142,23 +142,25 @@ export default function TetapanPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex flex-wrap gap-2">
-                {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors tap-target ${activeTab === tab.id
-                                ? "bg-gray-900 text-white"
-                                : "text-gray-600 hover:bg-gray-100"
-                                }`}
-                        >
-                            <Icon size={18} />
-                            {tab.label}
-                        </button>
-                    );
-                })}
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-hide">
+                <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] ${activeTab === tab.id
+                                    ? "bg-gray-900 text-white"
+                                    : "text-gray-600 hover:bg-gray-100"
+                                    }`}
+                            >
+                                <Icon size={18} />
+                                {tab.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Tab Content */}

@@ -2,10 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PublicMosquePage } from "./PublicMosquePage";
+import { StructuredData } from "@/components/StructuredData";
+import { generateWebPageSchema, generateWebSiteSchema, combineSchemas } from "@/lib/structuredData";
 
 interface Props {
     params: Promise<{ slug: string }>;
 }
+
+import { constructTenantMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
@@ -22,27 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: "Masjid Tidak Dijumpai" };
     }
 
-    const title = `${mosque.name} | MOSQ`;
-    const description = mosque.tagline || mosque.about_text?.slice(0, 160) || `Laman web rasmi ${mosque.name}`;
-    const imageUrl = mosque.hero_image_url || mosque.logo_url;
-
-    return {
-        title,
-        description,
-        openGraph: {
-            title,
-            description,
-            type: "website",
-            siteName: "MOSQ",
-            images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630 }] : [],
-        },
-        twitter: {
-            card: "summary_large_image",
-            title,
-            description,
-            images: imageUrl ? [imageUrl] : [],
-        },
-    };
+    return constructTenantMetadata({
+        mosque,
+        slug,
+        title: `${mosque.name} | MOSQ`,
+    });
 }
 
 
@@ -67,7 +55,7 @@ export default async function MosquePage({ params }: Props) {
         { data: announcements },
         { data: events },
         { data: committee },
-        // @ts-ignore - Dynamic import to avoid circular dependency if any, but standard import should work
+        // Dynamic import to avoid circular dependency if any, but standard import should work
         prayerTimes
     ] = await Promise.all([
         supabase
@@ -93,13 +81,26 @@ export default async function MosquePage({ params }: Props) {
         mosque.zone_code ? import("@/lib/jakim").then(m => m.fetchPrayerTimes(mosque.zone_code!)) : Promise.resolve(null)
     ]);
 
+    // Generate Structured Data (WebSite + WebPage)
+    const webSiteSchema = generateWebSiteSchema(mosque);
+    const webPageSchema = generateWebPageSchema(mosque, {
+        name: mosque.name, // Use mosque name directly
+        description: `Maklumat rasmi ${mosque.name} termasuk jadual solat, aktiviti dan cara hubungi.`,
+        path: ""
+    });
+
+    const jsonLd = combineSchemas(webSiteSchema, webPageSchema);
+
     return (
-        <PublicMosquePage
-            mosque={mosque}
-            announcements={announcements || []}
-            events={events || []}
-            committee={committee || []}
-            initialPrayerTimes={prayerTimes}
-        />
+        <>
+            <StructuredData data={jsonLd} />
+            <PublicMosquePage
+                mosque={mosque}
+                announcements={announcements || []}
+                events={events || []}
+                committee={committee || []}
+                initialPrayerTimes={prayerTimes}
+            />
+        </>
     );
 }
