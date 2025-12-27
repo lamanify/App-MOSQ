@@ -19,9 +19,9 @@ import {
     Users,
     ChevronRight,
     Send,
-    Video,
 } from "lucide-react";
 
+import { TikTokIcon } from "./_components/TikTokIcon";
 import { WhatsAppIcon } from "./_components/WhatsAppIcon";
 import { PublicHeader } from "./_components/PublicHeader";
 import { PublicFooter } from "./_components/PublicFooter";
@@ -471,7 +471,7 @@ export function PublicMosquePage({
                                                 rel="noopener noreferrer"
                                                 className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all"
                                             >
-                                                <Video size={22} strokeWidth={1.5} />
+                                                <TikTokIcon size={22} />
                                             </a>
                                         )}
                                         {mosque.youtube_url && (
