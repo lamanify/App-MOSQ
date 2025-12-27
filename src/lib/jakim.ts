@@ -1,5 +1,5 @@
 // JAKIM e-Solat API Integration
-// API: https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat
+// API: https://api.waktusolat.app (Drop-in replacement for JAKIM)
 
 export interface PrayerTime {
     hijri: string;
@@ -15,7 +15,7 @@ export interface PrayerTime {
 }
 
 export interface PrayerTimesResponse {
-    prayerTime: PrayerTime[];  // Note: API returns 'prayerTime' not 'ppirayerTime'
+    prayerTime: PrayerTime[];
     status: string;
     serverTime: string;
     periodType: string;
@@ -51,12 +51,12 @@ export interface SimplePrayerTimes {
 export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTimes | null> {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
         const response = await fetch(
-            `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zoneCode}`,
+            `https://api.waktusolat.app/solat/${zoneCode}`,
             {
-                // Cache for 6 hours - prayer times don't change during the day
+                // Cache for 6 hours
                 next: { revalidate: 21600 },
                 headers: {
                     'Accept': 'application/json',
@@ -68,17 +68,29 @@ export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTi
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error(`JAKIM API error: ${response.status}`);
+            throw new Error(`Prayer Times API error: ${response.status}`);
         }
 
         const data: PrayerTimesResponse = await response.json();
 
         if (data.status !== "OK!" || !data.prayerTime || data.prayerTime.length === 0) {
-            console.error("JAKIM API returned invalid data:", data);
-            throw new Error("Invalid response from JAKIM API");
+            console.error("Prayer Times API returned invalid data:", data);
+            throw new Error("Invalid response from Prayer Times API");
         }
 
-        const today = data.prayerTime[0];
+        // The API returns the whole month. Find today's date in Malaysia timezone.
+        const todayDate = getMalaysiaDate();
+        const today = data.prayerTime.find(p => p.date === todayDate);
+
+        if (!today) {
+             console.error(`Prayer times for date ${todayDate} not found in response`);
+             // Fallback to the first entry if today is not found (though unlikely if API works correctly)
+             // or maybe the API returns next month?
+             // Better to return null than wrong data?
+             // But let's try to match by day if date format mismatch?
+             // Assuming strict match first.
+             return null;
+        }
 
         return {
             subuh: formatTime(today.fajr),
@@ -96,6 +108,24 @@ export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTi
     }
 }
 
+function getMalaysiaDate(): string {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kuala_Lumpur',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+
+    // en-GB format: "27 Dec 2025"
+    // API format: "27-Dec-2025"
+    const parts = formatter.formatToParts(new Date());
+    const day = parts.find(p => p.type === 'day')?.value;
+    const month = parts.find(p => p.type === 'month')?.value;
+    const year = parts.find(p => p.type === 'year')?.value;
+
+    return `${day}-${month}-${year}`;
+}
+
 // Format time from "HH:MM:SS" to "HH:MM" or handle "HH:MM"
 function formatTime(time: string): string {
     if (!time) return "--:--";
@@ -109,7 +139,9 @@ function formatTime(time: string): string {
 // Get the next prayer based on current time
 export function getNextPrayer(prayerTimes: SimplePrayerTimes): { name: string; time: string } | null {
     const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
+    // Convert to Malaysia time for comparison
+    const malaysiaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" }));
+    const currentTime = malaysiaTime.getHours() * 60 + malaysiaTime.getMinutes();
 
     const prayers = [
         { name: "Subuh", time: prayerTimes.subuh },
