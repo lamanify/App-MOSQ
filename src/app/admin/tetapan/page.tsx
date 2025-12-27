@@ -581,7 +581,7 @@ export default function TetapanPage() {
                                                 type="number"
                                                 min="0"
                                                 max="60"
-                                                value={formData[prayer.id as keyof MosqueUpdate] ?? 10}
+                                                value={(formData[prayer.id as keyof MosqueUpdate] as number) ?? 10}
                                                 onChange={(e) => updateField(prayer.id as keyof MosqueUpdate, parseInt(e.target.value) || 0)}
                                                 className="form-input text-lg font-bold h-12 pr-12 focus:border-orange-500 focus:ring-orange-500"
                                             />
