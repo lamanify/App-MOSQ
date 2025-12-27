@@ -50,6 +50,9 @@ export interface SimplePrayerTimes {
 
 export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTimes | null> {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const response = await fetch(
             `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zoneCode}`,
             {
@@ -58,8 +61,11 @@ export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTi
                 headers: {
                     'Accept': 'application/json',
                 },
+                signal: controller.signal
             }
         );
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error(`JAKIM API error: ${response.status}`);

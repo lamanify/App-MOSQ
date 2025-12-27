@@ -103,13 +103,12 @@ export function PublicMosquePage({
             </section>
 
             {/* Prayer Times Section - Extracted client component */}
-            {initialPrayerTimes && (
-                <PrayerTimesSection
-                    prayerTimes={initialPrayerTimes}
-                    mosqueZoneCode={mosque.zone_code}
-                    brandColor={brandColor}
-                />
-            )}
+            {/* Always render PrayerTimesSection, it now handles null state gracefully */}
+            <PrayerTimesSection
+                prayerTimes={initialPrayerTimes}
+                mosqueZoneCode={mosque.zone_code}
+                brandColor={brandColor}
+            />
 
             {/* Announcements - Bento Grid Style */}
             {announcements.length > 0 && (
