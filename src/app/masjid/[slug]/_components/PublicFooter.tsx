@@ -164,7 +164,7 @@ export function PublicFooter({ mosque }: PublicFooterProps) {
             {/* Floating Action Button for WhatsApp */}
             {mosque.whatsapp_link && (
                 <a
-                    href={`https://wa.me/${mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
+                    href={`https://api.whatsapp.com/send/?phone=${mosque.whatsapp_link.replace(/[^0-9]/g, "").startsWith('6') ? mosque.whatsapp_link.replace(/[^0-9]/g, "") : '6' + mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-16 h-16 bg-[#25D366] text-white rounded-full shadow-[0_8px_30px_rgb(37,211,102,0.4)] hover:scale-110 hover:shadow-[0_8px_40px_rgb(37,211,102,0.6)] transition-all duration-300 group"

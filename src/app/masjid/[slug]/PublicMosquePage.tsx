@@ -108,6 +108,7 @@ export function PublicMosquePage({
                 prayerTimes={initialPrayerTimes}
                 mosqueZoneCode={mosque.zone_code}
                 brandColor={brandColor}
+                mosque={mosque}
             />
 
             {/* Announcements - Bento Grid Style */}
@@ -142,9 +143,9 @@ export function PublicMosquePage({
                                     <div className="flex justify-between items-start mb-6">
                                         <span className={`
                                             px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5
-                                            ${index === 0 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}
+                                            ${index === 0 ? 'bg-brand text-white' : 'bg-brand/10 text-brand'}
                                         `}>
-                                            <Bell size={10} strokeWidth={2} />
+                                            <Bell size={10} strokeWidth={2} className={index === 0 ? 'text-white' : 'text-brand'} />
                                             Pengumuman
                                         </span>
                                         <span className="text-sm font-medium text-gray-400">
@@ -412,7 +413,7 @@ export function PublicMosquePage({
                             {/* WhatsApp CTA */}
                             {mosque.whatsapp_link && (
                                 <a
-                                    href={`https://wa.me/${mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
+                                    href={`https://api.whatsapp.com/send/?phone=${mosque.whatsapp_link.replace(/[^0-9]/g, "").startsWith('6') ? mosque.whatsapp_link.replace(/[^0-9]/g, "") : '6' + mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-4 bg-[#25D366] text-white p-6 rounded-2xl hover:shadow-lg transition-all group"

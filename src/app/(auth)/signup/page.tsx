@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -71,8 +72,15 @@ export default function SignupPage() {
         <div className="glass-card p-8 animate-slide-up">
             {/* Logo & Header */}
             <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-black rounded-2xl mb-4 shadow-sm">
-                    <span className="text-2xl font-bold text-white">M</span>
+                <div className="flex justify-center mb-8">
+                    <Image
+                        src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766798421/Mosq_7_vn5zgh.webp"
+                        alt="MOSQ Logo"
+                        width={240}
+                        height={80}
+                        className="h-16 w-auto object-contain"
+                        priority
+                    />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900">Daftar Akaun</h1>
                 <p className="text-gray-600 mt-2">Bina laman web masjid percuma</p>

@@ -5,14 +5,16 @@ import { Sunrise, Sun, Sunset, Moon, CloudOff } from "lucide-react";
 import { getNextPrayer, type SimplePrayerTimes } from "@/lib/jakim";
 import { getZoneByCode } from "@/lib/zones";
 import { PrayerClock } from "./PrayerClock";
+import { Mosque } from "@/lib/supabase/types";
 
 interface PrayerTimesSectionProps {
     prayerTimes: SimplePrayerTimes | null;
     mosqueZoneCode: string | null;
     brandColor: string;
+    mosque: Mosque;
 }
 
-export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor }: PrayerTimesSectionProps) {
+export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor, mosque }: PrayerTimesSectionProps) {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
     useEffect(() => {
@@ -26,10 +28,24 @@ export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor }: 
         return getNextPrayer(prayerTimes)?.name || null;
     }, [prayerTimes, currentTime]);
 
-    const getIqamahTime = (timeStr: string) => {
+    const getIqamahTime = (prayerName: string, timeStr: string) => {
         try {
+            if (prayerName === "Syuruk") return "-";
+
+            // Get offset from mosque settings
+            let offset = 10; // Default
+            if (mosque.iqamah_custom_enabled) {
+                switch (prayerName) {
+                    case "Subuh": offset = mosque.iqamah_subuh; break;
+                    case "Zohor": offset = mosque.iqamah_zohor; break;
+                    case "Asar": offset = mosque.iqamah_asar; break;
+                    case "Maghrib": offset = mosque.iqamah_maghrib; break;
+                    case "Isyak": offset = mosque.iqamah_isyak; break;
+                }
+            }
+
             const [h, m] = timeStr.split(':').map(Number);
-            let newM = m + 10;
+            let newM = m + offset;
             let newH = h;
             if (newM >= 60) {
                 newM -= 60;
@@ -48,18 +64,18 @@ export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor }: 
             <section id="info" className="relative z-20 -mt-24 px-4 pb-20">
                 <div className="max-w-7xl mx-auto">
                     <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-brand/10 p-12 shadow-sm flex flex-col items-center justify-center text-center">
-                         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                             <CloudOff size={32} className="text-gray-400" />
-                         </div>
-                         <h3 className="text-xl font-bold text-gray-900 mb-2">Waktu Solat Tidak Tersedia</h3>
-                         <p className="text-gray-500 max-w-md">
-                             Maaf, kami tidak dapat mendapatkan waktu solat terkini dari sumber rasmi JAKIM buat masa ini. Sila cuba lagi sebentar lagi.
-                         </p>
-                         {mosqueZoneCode && (
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Waktu Solat Tidak Tersedia</h3>
+                        <p className="text-gray-500 max-w-md">
+                            Maaf, kami tidak dapat mendapatkan waktu solat terkini dari sumber rasmi JAKIM buat masa ini. Sila cuba lagi sebentar lagi.
+                        </p>
+                        {mosqueZoneCode && (
                             <p className="text-xs text-gray-400 mt-4 bg-gray-100 px-3 py-1 rounded-full">
                                 Zon: {mosqueZoneCode}
                             </p>
-                         )}
+                        )}
                     </div>
                 </div>
             </section>
@@ -117,7 +133,7 @@ export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor }: 
                                             Iqamah
                                         </div>
                                         <p className="text-sm font-bold tabular-nums">
-                                            {prayer.name === "Syuruk" ? "-" : getIqamahTime(prayer.time)}
+                                            {getIqamahTime(prayer.name, prayer.time)}
                                         </p>
                                     </div>
                                 </div>

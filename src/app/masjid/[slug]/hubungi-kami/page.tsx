@@ -160,7 +160,7 @@ export default async function HubungiKamiPage({ params }: Props) {
                             {/* WhatsApp CTA */}
                             {mosque.whatsapp_link && (
                                 <a
-                                    href={`https://wa.me/${mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
+                                    href={`https://api.whatsapp.com/send/?phone=${mosque.whatsapp_link.replace(/[^0-9]/g, "").startsWith('6') ? mosque.whatsapp_link.replace(/[^0-9]/g, "") : '6' + mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-4 bg-[#25D366] text-white p-6 rounded-2xl hover:shadow-lg transition-all group"

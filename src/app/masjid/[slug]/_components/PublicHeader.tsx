@@ -91,7 +91,7 @@ export function PublicHeader({ mosque }: PublicHeaderProps) {
                     <div className="flex items-center gap-2 z-50 relative">
                         {mosque.whatsapp_link && (
                             <a
-                                href={`https://wa.me/${mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
+                                href={`https://api.whatsapp.com/send/?phone=${mosque.whatsapp_link.replace(/[^0-9]/g, "").startsWith('6') ? mosque.whatsapp_link.replace(/[^0-9]/g, "") : '6' + mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={`hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ${scrolled
@@ -146,7 +146,7 @@ export function PublicHeader({ mosque }: PublicHeaderProps) {
                     {/* Mobile WhatsApp Button */}
                     {mosque.whatsapp_link && (
                         <a
-                            href={`https://wa.me/${mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
+                            href={`https://api.whatsapp.com/send/?phone=${mosque.whatsapp_link.replace(/[^0-9]/g, "").startsWith('6') ? mosque.whatsapp_link.replace(/[^0-9]/g, "") : '6' + mosque.whatsapp_link.replace(/[^0-9]/g, "")}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-6 flex items-center justify-center gap-2 px-5 py-4 rounded-2xl font-bold font-heading text-white bg-[#25D366] hover:bg-[#20bd5a] shadow-lg transition-all"
