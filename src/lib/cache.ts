@@ -50,7 +50,7 @@ export const getCachedMosqueBySlug = unstable_cache(
 
         return mosque;
     },
-    ["mosque-by-slug", slug],
+    ["mosque-by-slug"],
     {
         revalidate: CACHE_DURATION.MEDIUM,
         tags: ["mosques"],
@@ -77,7 +77,7 @@ export const getCachedMosqueMetadata = unstable_cache(
 
         return mosque;
     },
-    ["mosque-metadata", slug],
+    ["mosque-metadata"],
     {
         revalidate: CACHE_DURATION.LONG,
         tags: ["mosques"],
@@ -104,7 +104,7 @@ export const getCachedAnnouncements = unstable_cache(
         const { data: announcements } = await query;
         return announcements || [];
     },
-    ["announcements", mosqueId, limit?.toString() || "all"],
+    ["announcements"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["announcements"],
@@ -131,7 +131,7 @@ export const getCachedEvents = unstable_cache(
         const { data: events } = await query;
         return events || [];
     },
-    ["events", mosqueId, limit?.toString() || "all"],
+    ["events"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["events"],
@@ -152,7 +152,7 @@ export const getCachedCommittee = unstable_cache(
 
         return committee || [];
     },
-    ["committee", mosqueId],
+    ["committee"],
     {
         revalidate: CACHE_DURATION.LONG,
         tags: ["committee"],
@@ -196,7 +196,7 @@ export const getCachedAnnouncementBySlug = unstable_cache(
 
         return announcement;
     },
-    ["announcement-by-slug", mosqueId, slugOrId],
+    ["announcement-by-slug"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["announcements"],
@@ -220,7 +220,7 @@ export const getCachedEventBySlug = unstable_cache(
 
         return event;
     },
-    ["event-by-slug", mosqueId, slugOrId],
+    ["event-by-slug"],
     {
         revalidate: CACHE_DURATION.SHORT,
         tags: ["events"],
