@@ -143,6 +143,47 @@ export default function TetapanPage() {
             if (!input) return { google_maps_url: null, google_maps_name: null, latitude: null, longitude: null };
             const trimmed = input.trim();
 
+            // Handle Google Maps Query URLs (e.g. maps.google.com?q=...)
+            if (trimmed.includes("google.com") && trimmed.includes("q=")) {
+                try {
+                    const url = new URL(trimmed);
+                    const q = url.searchParams.get("q");
+                    if (q) {
+                        // Check if q is coordinates
+                        const coordMatch = q.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
+                        if (coordMatch) {
+                            return {
+                                google_maps_url: trimmed,
+                                google_maps_name: null,
+                                latitude: parseFloat(coordMatch[1]),
+                                longitude: parseFloat(coordMatch[2])
+                            };
+                        }
+                        // Otherwise treat q as name
+                        // Also check if there's a specific 'll' (latlong) param which might be more accurate
+                        const ll = url.searchParams.get("ll");
+                        let lat = null;
+                        let lng = null;
+                        if (ll) {
+                            const llMatch = ll.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
+                            if (llMatch) {
+                                lat = parseFloat(llMatch[1]);
+                                lng = parseFloat(llMatch[2]);
+                            }
+                        }
+
+                        return {
+                            google_maps_url: trimmed,
+                            google_maps_name: q.replace(/\+/g, " "),
+                            latitude: lat,
+                            longitude: lng
+                        };
+                    }
+                } catch (e) {
+                    console.error("Error parsing URL params", e);
+                }
+            }
+
             // Check for Google Maps Place URL (Resolved)
             if (trimmed.includes("google.com/maps/place")) {
                 // Try to extract coordinates from @lat,lng
