@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/server";
 
 /**
  * Cache durations in seconds
@@ -36,7 +36,7 @@ export const CACHE_TAGS = {
  */
 export const getCachedMosqueBySlug = unstable_cache(
     async (slug: string) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         const { data: mosque, error } = await supabase
             .from("mosques")
             .select("*")
@@ -63,7 +63,7 @@ export const getCachedMosqueBySlug = unstable_cache(
  */
 export const getCachedMosqueMetadata = unstable_cache(
     async (slug: string) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         const { data: mosque, error } = await supabase
             .from("mosques")
             .select("id, name, slug, tagline, about_text, logo_url, hero_image_url, brand_color")
@@ -89,7 +89,7 @@ export const getCachedMosqueMetadata = unstable_cache(
  */
 export const getCachedAnnouncements = unstable_cache(
     async (mosqueId: string, limit?: number) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         let query = supabase
             .from("announcements")
             .select("*")
@@ -116,7 +116,7 @@ export const getCachedAnnouncements = unstable_cache(
  */
 export const getCachedEvents = unstable_cache(
     async (mosqueId: string, limit?: number) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         let query = supabase
             .from("events")
             .select("*")
@@ -143,7 +143,7 @@ export const getCachedEvents = unstable_cache(
  */
 export const getCachedCommittee = unstable_cache(
     async (mosqueId: string) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         const { data: committee } = await supabase
             .from("committee_members")
             .select("*")
@@ -164,7 +164,7 @@ export const getCachedCommittee = unstable_cache(
  */
 export const getAllMosqueSlugs = unstable_cache(
     async () => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         const { data: mosques } = await supabase
             .from("mosques")
             .select("slug")
@@ -184,7 +184,7 @@ export const getAllMosqueSlugs = unstable_cache(
  */
 export const getCachedAnnouncementBySlug = unstable_cache(
     async (mosqueId: string, slugOrId: string) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
 
         const { data: announcement } = await supabase
@@ -208,7 +208,7 @@ export const getCachedAnnouncementBySlug = unstable_cache(
  */
 export const getCachedEventBySlug = unstable_cache(
     async (mosqueId: string, slugOrId: string) => {
-        const supabase = await createClient();
+        const supabase = createPublicClient();
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
 
         const { data: event } = await supabase
