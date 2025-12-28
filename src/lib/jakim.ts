@@ -70,6 +70,8 @@ export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTi
                     headers: {
                         'Accept': 'application/json',
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Referer': 'https://www.e-solat.gov.my/',
+                        'Origin': 'https://www.e-solat.gov.my',
                     },
                     signal: controller.signal,
                 }
@@ -78,20 +80,32 @@ export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTi
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error(`JAKIM API error: ${response.status}`);
+                const errorBody = await response.text().catch(() => "");
+                throw new Error(`JAKIM API error ${response.status}: ${errorBody.slice(0, 100)}`);
             }
 
-            const data: PrayerTimesResponse = await response.json();
+            let data: PrayerTimesResponse;
+            try {
+                data = await response.json();
+            } catch (err) {
+                const text = await fetch(apiUrl).then(r => r.text());
+                console.error("Failed to parse JAKIM response as JSON. Body:", text.slice(0, 200));
+                throw new Error("Invalid JSON response from JAKIM API");
+            }
 
             if (data.status !== "OK!" || !data.prayerTime || data.prayerTime.length === 0) {
-                console.error("JAKIM API returned invalid data:", data);
-                throw new Error("Invalid response from JAKIM API");
+                console.error("JAKIM API returned invalid status or empty data:", data);
+                throw new Error(`JAKIM API status: ${data.status}`);
             }
 
             const today = data.prayerTime[0];
 
+            if (!today) {
+                throw new Error("No prayer times found for today in JAKIM response");
+            }
+
             return {
-                subuh: formatTime(today.fajr),
+                subuh: formatTime(today.fajr || today.imsak),
                 syuruk: formatTime(today.syuruk),
                 zohor: formatTime(today.dhuhr),
                 asar: formatTime(today.asr),
