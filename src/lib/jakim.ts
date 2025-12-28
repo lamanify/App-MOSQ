@@ -1,5 +1,5 @@
 // JAKIM e-Solat API Integration
-// API: https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat
+// API: https://api.waktusolat.app (Drop-in replacement for JAKIM)
 
 export interface PrayerTime {
     hijri: string;
@@ -15,7 +15,7 @@ export interface PrayerTime {
 }
 
 export interface PrayerTimesResponse {
-    prayerTime: PrayerTime[];  // Note: API returns 'prayerTime' not 'ppirayerTime'
+    prayerTime: PrayerTime[];
     status: string;
     serverTime: string;
     periodType: string;
@@ -49,85 +49,81 @@ export interface SimplePrayerTimes {
 }
 
 export async function fetchPrayerTimes(zoneCode: string): Promise<SimplePrayerTimes | null> {
-    const maxRetries = 2;
-    let lastError: Error | null = null;
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    const sanitizedZone = zoneCode.trim().toUpperCase();
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            // Create an AbortController for timeout handling
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-            const apiUrl = `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${sanitizedZone}`;
-
-            const response = await fetch(
-                apiUrl,
-                {
-                    // Cache for 1 hour
-                    next: { revalidate: 3600 },
-                    headers: {
-                        'Accept': 'application/json',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Referer': 'https://www.e-solat.gov.my/',
-                        'Origin': 'https://www.e-solat.gov.my',
-                    },
-                    signal: controller.signal,
-                }
-            );
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                const errorBody = await response.text().catch(() => "");
-                throw new Error(`JAKIM API error ${response.status}: ${errorBody.slice(0, 100)}`);
+        const response = await fetch(
+            `https://api.waktusolat.app/solat/${zoneCode}`,
+            {
+                // Cache for 6 hours
+                next: { revalidate: 21600 },
+                headers: {
+                    'Accept': 'application/json',
+                },
+                signal: controller.signal
             }
+        );
 
-            let data: PrayerTimesResponse;
-            try {
-                data = await response.json();
-            } catch (err) {
-                const text = await fetch(apiUrl).then(r => r.text());
-                console.error("Failed to parse JAKIM response as JSON. Body:", text.slice(0, 200));
-                throw new Error("Invalid JSON response from JAKIM API");
-            }
+        clearTimeout(timeoutId);
 
-            if (data.status !== "OK!" || !data.prayerTime || data.prayerTime.length === 0) {
-                console.error("JAKIM API returned invalid status or empty data:", data);
-                throw new Error(`JAKIM API status: ${data.status}`);
-            }
-
-            const today = data.prayerTime[0];
-
-            if (!today) {
-                throw new Error("No prayer times found for today in JAKIM response");
-            }
-
-            return {
-                subuh: formatTime(today.fajr || today.imsak),
-                syuruk: formatTime(today.syuruk),
-                zohor: formatTime(today.dhuhr),
-                asar: formatTime(today.asr),
-                maghrib: formatTime(today.maghrib),
-                isyak: formatTime(today.isha),
-                date: today.date,
-                hijri: today.hijri,
-            };
-        } catch (error) {
-            lastError = error as Error;
-            console.error(`Error fetching prayer times (attempt ${attempt + 1}/${maxRetries + 1}):`, error);
-
-            // If it's the last attempt, break
-            if (attempt >= maxRetries) break;
-
-            // Wait before retrying (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt)));
+        if (!response.ok) {
+            throw new Error(`Prayer Times API error: ${response.status}`);
         }
-    }
 
-    console.error("All attempts to fetch prayer times failed:", lastError);
-    return null;
+        const data: PrayerTimesResponse = await response.json();
+
+        if (data.status !== "OK!" || !data.prayerTime || data.prayerTime.length === 0) {
+            console.error("Prayer Times API returned invalid data:", data);
+            throw new Error("Invalid response from Prayer Times API");
+        }
+
+        // The API returns the whole month. Find today's date in Malaysia timezone.
+        const todayDate = getMalaysiaDate();
+        const today = data.prayerTime.find(p => p.date === todayDate);
+
+        if (!today) {
+             console.error(`Prayer times for date ${todayDate} not found in response`);
+             // Fallback to the first entry if today is not found (though unlikely if API works correctly)
+             // or maybe the API returns next month?
+             // Better to return null than wrong data?
+             // But let's try to match by day if date format mismatch?
+             // Assuming strict match first.
+             return null;
+        }
+
+        return {
+            subuh: formatTime(today.fajr),
+            syuruk: formatTime(today.syuruk),
+            zohor: formatTime(today.dhuhr),
+            asar: formatTime(today.asr),
+            maghrib: formatTime(today.maghrib),
+            isyak: formatTime(today.isha),
+            date: today.date,
+            hijri: today.hijri,
+        };
+    } catch (error) {
+        console.error("Error fetching prayer times:", error);
+        return null;
+    }
+}
+
+function getMalaysiaDate(): string {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kuala_Lumpur',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+
+    // en-GB format: "27 Dec 2025"
+    // API format: "27-Dec-2025"
+    const parts = formatter.formatToParts(new Date());
+    const day = parts.find(p => p.type === 'day')?.value;
+    const month = parts.find(p => p.type === 'month')?.value;
+    const year = parts.find(p => p.type === 'year')?.value;
+
+    return `${day}-${month}-${year}`;
 }
 
 // Format time from "HH:MM:SS" to "HH:MM" or handle "HH:MM"
@@ -143,7 +139,9 @@ function formatTime(time: string): string {
 // Get the next prayer based on current time
 export function getNextPrayer(prayerTimes: SimplePrayerTimes): { name: string; time: string } | null {
     const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
+    // Convert to Malaysia time for comparison
+    const malaysiaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" }));
+    const currentTime = malaysiaTime.getHours() * 60 + malaysiaTime.getMinutes();
 
     const prayers = [
         { name: "Subuh", time: prayerTimes.subuh },

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mosque } from "@/lib/supabase/types";
-import { Landmark as MosqueIcon, Phone, Mail, Facebook, Instagram, Send } from "lucide-react";
+import { Landmark as MosqueIcon, Phone, Mail, Facebook, Instagram, Send, Youtube } from "lucide-react";
+import { TikTokIcon } from "./TikTokIcon";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 interface PublicFooterProps {
@@ -106,6 +107,26 @@ export function PublicFooter({ mosque }: PublicFooterProps) {
                                     className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-500 hover:text-white transition-all"
                                 >
                                     <Send size={18} strokeWidth={1.5} />
+                                </a>
+                            )}
+                            {mosque.tiktok_url && (
+                                <a
+                                    href={mosque.tiktok_url.startsWith('http') ? mosque.tiktok_url : `https://${mosque.tiktok_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all"
+                                >
+                                    <TikTokIcon size={18} />
+                                </a>
+                            )}
+                            {mosque.youtube_url && (
+                                <a
+                                    href={mosque.youtube_url.startsWith('http') ? mosque.youtube_url : `https://${mosque.youtube_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-red-600 hover:text-white transition-all"
+                                >
+                                    <Youtube size={18} strokeWidth={1.5} />
                                 </a>
                             )}
                         </div>

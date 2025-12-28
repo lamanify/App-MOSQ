@@ -19,9 +19,9 @@ import {
     Users,
     ChevronRight,
     Send,
-    Video,
 } from "lucide-react";
 
+import { TikTokIcon } from "./_components/TikTokIcon";
 import { WhatsAppIcon } from "./_components/WhatsAppIcon";
 import { PublicHeader } from "./_components/PublicHeader";
 import { PublicFooter } from "./_components/PublicFooter";
@@ -103,46 +103,12 @@ export function PublicMosquePage({
             </section>
 
             {/* Prayer Times Section - Extracted client component */}
-            {initialPrayerTimes ? (
-                <PrayerTimesSection
-                    prayerTimes={initialPrayerTimes}
-                    mosqueZoneCode={mosque.zone_code}
-                    brandColor={brandColor}
-                />
-            ) : mosque.zone_code ? (
-                <section id="info" className="relative z-20 -mt-24 px-4 pb-20">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-brand/10 p-8 shadow-sm text-center">
-                            <div className="flex justify-center mb-4">
-                                <div className="p-4 bg-gray-100 rounded-2xl">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="32"
-                                        height="32"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="text-gray-400"
-                                    >
-                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                        <line x1="1" y1="1" x2="23" y2="23" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-heading font-bold text-gray-900 mb-2">Waktu Solat Tidak Tersedia</h3>
-                            <p className="text-gray-500 mb-4 max-w-md mx-auto">
-                                Maaf, kami tidak dapat mendapatkan waktu solat terkini dari sumber rasmi JAKIM buat masa ini. Sila cuba lagi sebentar lagi.
-                            </p>
-                            <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-500">
-                                Zon: {mosque.zone_code}
-                            </span>
-                        </div>
-                    </div>
-                </section>
-            ) : null}
+            {/* Always render PrayerTimesSection, it now handles null state gracefully */}
+            <PrayerTimesSection
+                prayerTimes={initialPrayerTimes}
+                mosqueZoneCode={mosque.zone_code}
+                brandColor={brandColor}
+            />
 
             {/* Announcements - Bento Grid Style */}
             {announcements.length > 0 && (
@@ -383,7 +349,7 @@ export function PublicMosquePage({
             <section id="hubungi" className="py-24 px-4 bg-gray-50/50">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center gap-4 mb-16">
-                        <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center text-green-600">
+                        <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand">
                             <MapPin size={24} />
                         </div>
                         <h2 className="text-4xl font-heading font-black text-gray-900 tracking-tight">Hubungi Kami</h2>
@@ -504,7 +470,7 @@ export function PublicMosquePage({
                                                 rel="noopener noreferrer"
                                                 className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all"
                                             >
-                                                <Video size={22} strokeWidth={1.5} />
+                                                <TikTokIcon size={22} />
                                             </a>
                                         )}
                                         {mosque.youtube_url && (

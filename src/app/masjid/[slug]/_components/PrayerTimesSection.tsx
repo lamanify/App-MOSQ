@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Sunrise, Sun, Sunset, Moon } from "lucide-react";
+import { Sunrise, Sun, Sunset, Moon, CloudOff } from "lucide-react";
 import { getNextPrayer, type SimplePrayerTimes } from "@/lib/jakim";
 import { getZoneByCode } from "@/lib/zones";
 import { PrayerClock } from "./PrayerClock";
 
 interface PrayerTimesSectionProps {
-    prayerTimes: SimplePrayerTimes;
+    prayerTimes: SimplePrayerTimes | null;
     mosqueZoneCode: string | null;
     brandColor: string;
 }
@@ -41,6 +41,31 @@ export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor }: 
         }
     };
 
+    const currentZone = getZoneByCode(mosqueZoneCode || "");
+
+    if (!prayerTimes) {
+        return (
+            <section id="info" className="relative z-20 -mt-24 px-4 pb-20">
+                <div className="max-w-7xl mx-auto">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-brand/10 p-12 shadow-sm flex flex-col items-center justify-center text-center">
+                         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                            <CloudOff size={32} className="text-gray-400" />
+                         </div>
+                         <h3 className="text-xl font-bold text-gray-900 mb-2">Waktu Solat Tidak Tersedia</h3>
+                         <p className="text-gray-500 max-w-md">
+                             Maaf, kami tidak dapat mendapatkan waktu solat terkini dari sumber rasmi JAKIM buat masa ini. Sila cuba lagi sebentar lagi.
+                         </p>
+                         {mosqueZoneCode && (
+                            <p className="text-xs text-gray-400 mt-4 bg-gray-100 px-3 py-1 rounded-full">
+                                Zon: {mosqueZoneCode}
+                            </p>
+                         )}
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
     const prayers = [
         { name: "Subuh", time: prayerTimes.subuh, icon: Sunrise },
         { name: "Syuruk", time: prayerTimes.syuruk, icon: Sun },
@@ -49,8 +74,6 @@ export function PrayerTimesSection({ prayerTimes, mosqueZoneCode, brandColor }: 
         { name: "Maghrib", time: prayerTimes.maghrib, icon: Sunset },
         { name: "Isyak", time: prayerTimes.isyak, icon: Moon },
     ];
-
-    const currentZone = getZoneByCode(mosqueZoneCode || "");
 
     return (
         <section id="info" className="relative z-20 -mt-24 px-4 pb-20">
