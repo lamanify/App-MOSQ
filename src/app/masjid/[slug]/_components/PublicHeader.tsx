@@ -22,7 +22,7 @@ export function PublicHeader({ mosque }: PublicHeaderProps) {
 
         window.addEventListener("scroll", handleScroll);
         return () => {
-            window.removeEncoding("scroll", handleScroll);
+            window.removeEventListener("scroll", handleScroll);
         };
     }, []);
 
