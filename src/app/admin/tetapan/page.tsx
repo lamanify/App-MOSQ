@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { STATES, getZonesByState, type Zone } from "@/lib/zones";
 import { Loader2, Save, Building2, CreditCard, Globe, Phone, Palette, Shuffle, Clock } from "lucide-react";
 import { revalidateMosqueData } from "@/app/actions/mosque";
+import { resolveGoogleMapsLink } from "@/app/actions/google-maps";
 
 // Predefined taglines for randomization
 const TAGLINE_OPTIONS = [
@@ -132,10 +133,43 @@ export default function TetapanPage() {
         setSaving(true);
         const supabase = createClient();
 
+        let resolvedInput = googleMapsInput;
+        if (googleMapsInput.includes("maps.app.goo.gl")) {
+            resolvedInput = await resolveGoogleMapsLink(googleMapsInput);
+        }
+
         // Smart parse google maps input
         const { google_maps_url, google_maps_name, latitude, longitude } = (function parseLocation(input: string) {
             if (!input) return { google_maps_url: null, google_maps_name: null, latitude: null, longitude: null };
             const trimmed = input.trim();
+
+            // Check for Google Maps Place URL (Resolved)
+            if (trimmed.includes("google.com/maps/place")) {
+                // Try to extract coordinates from @lat,lng
+                const coordMatch = trimmed.match(/@([-+]?[\d.]+),([-+]?[\d.]+)/);
+                let lat = null;
+                let lng = null;
+                let name = null;
+
+                if (coordMatch) {
+                    lat = parseFloat(coordMatch[1]);
+                    lng = parseFloat(coordMatch[2]);
+                }
+
+                // Try to extract name from /place/NAME/
+                const nameMatch = trimmed.match(/\/place\/([^/]+)\//);
+                if (nameMatch) {
+                    name = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
+                }
+
+                return {
+                    google_maps_url: trimmed,
+                    google_maps_name: name, // We set the name if found
+                    latitude: lat,
+                    longitude: lng
+                };
+            }
+
             if (trimmed.startsWith("http") || trimmed.includes("google.com/maps") || trimmed.includes("maps.app.goo.gl")) {
                 return { google_maps_url: trimmed, google_maps_name: null, latitude: null, longitude: null };
             }
@@ -144,12 +178,12 @@ export default function TetapanPage() {
                 return { google_maps_url: null, google_maps_name: null, latitude: parseFloat(coordMatch[1]), longitude: parseFloat(coordMatch[2]) };
             }
             return { google_maps_url: null, google_maps_name: trimmed, latitude: null, longitude: null };
-        })(googleMapsInput);
+        })(resolvedInput);
 
         const updatedData = {
             ...formData,
             google_maps_url,
-            google_maps_name,
+            google_maps_name: google_maps_name || formData.google_maps_name, // keep existing name if not extracted
             latitude,
             longitude
         };

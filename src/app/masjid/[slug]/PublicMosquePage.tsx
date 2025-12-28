@@ -493,19 +493,24 @@ export function PublicMosquePage({
                         <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all">
                             {(() => {
                                 let mapSrc = "";
-                                if (mosque.google_maps_url) {
-                                    // If it's already an embed URL, use it directly
-                                    if (mosque.google_maps_url.includes("google.com/maps/embed")) {
-                                        mapSrc = mosque.google_maps_url;
-                                    } else {
-                                        // Otherwise treat as a query
-                                        mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.google_maps_url)}&output=embed`;
-                                    }
-                                } else if (mosque.google_maps_name) {
-                                    mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.google_maps_name)}&output=embed`;
-                                } else if (mosque.latitude && mosque.longitude) {
+                                // 1. Priority: Explicit Embed URL
+                                if (mosque.google_maps_url && mosque.google_maps_url.includes("google.com/maps/embed")) {
+                                    mapSrc = mosque.google_maps_url;
+                                }
+                                // 2. Priority: Coordinates (Most accurate for non-embed links)
+                                else if (mosque.latitude && mosque.longitude) {
                                     mapSrc = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3983.5!2d${mosque.longitude}!3d${mosque.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2smy!4v1`;
-                                } else if (mosque.address) {
+                                }
+                                // 3. Priority: Google Maps Name (Good for search)
+                                else if (mosque.google_maps_name) {
+                                    mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.google_maps_name)}&output=embed`;
+                                }
+                                // 4. Priority: Generic Google Maps URL (Last resort)
+                                else if (mosque.google_maps_url) {
+                                    mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.google_maps_url)}&output=embed`;
+                                }
+                                // 5. Priority: Address
+                                else if (mosque.address) {
                                     mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.address)}&output=embed`;
                                 }
 
