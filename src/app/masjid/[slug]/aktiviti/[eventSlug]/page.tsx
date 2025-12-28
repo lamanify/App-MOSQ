@@ -6,6 +6,7 @@ import { Calendar, Clock, User, MapPin, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Metadata } from "next";
+import { ShareButton } from "../../_components/ShareButton";
 import { StructuredData } from "@/components/StructuredData";
 import { generateEventSchema } from "@/lib/structuredData";
 import { constructTenantMetadata } from "@/lib/seo";
@@ -169,6 +170,20 @@ export default async function AktivitiDetailPage({ params }: Props) {
                             </div>
                         </div>
                     </div>
+                    {/* Footer Actions */}
+                    <footer className="p-8 md:px-16 pb-16 bg-gray-50/50 flex flex-col items-center text-center">
+                        <div className="max-w-md">
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Kongsi Program Ini</h2>
+                            <p className="text-gray-500 mb-8 font-light">Bantu kami menyebarkan maklumat ini kepada komuniti setempat.</p>
+
+                            <div className="flex justify-center gap-4">
+                                <ShareButton
+                                    title={event.title}
+                                    text={event.description?.substring(0, 100) || ""}
+                                />
+                            </div>
+                        </div>
+                    </footer>
                 </article>
             </main>
             <PublicFooter mosque={mosque} />

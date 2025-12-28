@@ -54,6 +54,7 @@ export default function TetapanPage() {
     const [mosque, setMosque] = useState<Mosque | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [googleMapsInput, setGoogleMapsInput] = useState("");
     const [activeTab, setActiveTab] = useState<TabType>("profil");
     const [zones, setZones] = useState<Zone[]>([]);
 
@@ -111,6 +112,11 @@ export default function TetapanPage() {
                 if (mosqueData.state) {
                     setZones(getZonesByState(mosqueData.state));
                 }
+                setGoogleMapsInput(
+                    mosqueData.google_maps_url ||
+                    (mosqueData.latitude && mosqueData.longitude ? `${mosqueData.latitude}, ${mosqueData.longitude}` : "") ||
+                    mosqueData.google_maps_name || ""
+                );
             }
         }
         setLoading(false);
@@ -126,10 +132,32 @@ export default function TetapanPage() {
         setSaving(true);
         const supabase = createClient();
 
+        // Smart parse google maps input
+        const { google_maps_url, google_maps_name, latitude, longitude } = (function parseLocation(input: string) {
+            if (!input) return { google_maps_url: null, google_maps_name: null, latitude: null, longitude: null };
+            const trimmed = input.trim();
+            if (trimmed.startsWith("http") || trimmed.includes("google.com/maps") || trimmed.includes("maps.app.goo.gl")) {
+                return { google_maps_url: trimmed, google_maps_name: null, latitude: null, longitude: null };
+            }
+            const coordMatch = trimmed.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
+            if (coordMatch) {
+                return { google_maps_url: null, google_maps_name: null, latitude: parseFloat(coordMatch[1]), longitude: parseFloat(coordMatch[2]) };
+            }
+            return { google_maps_url: null, google_maps_name: trimmed, latitude: null, longitude: null };
+        })(googleMapsInput);
+
+        const updatedData = {
+            ...formData,
+            google_maps_url,
+            google_maps_name,
+            latitude,
+            longitude
+        };
+
         try {
             const { error } = await supabase
                 .from("mosques")
-                .update(formData)
+                .update(updatedData)
                 .eq("id", mosque.id);
 
             if (error) throw error;
@@ -365,19 +393,21 @@ export default function TetapanPage() {
                 {activeTab === "hubungan" && (
                     <div className="space-y-6">
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label className="form-label">
-                                    Nama di Google Maps <span className="text-gray-400 font-normal">(Sekiranya Ada) - Optional</span>
-                                </Label>
-                                <Input
-                                    value={formData.google_maps_name || ""}
-                                    onChange={(e) => updateField("google_maps_name", e.target.value)}
-                                    placeholder="cth: Masjid Al-Hidayah (Official)"
-                                    className="form-input"
-                                />
-                                <p className="text-xs text-gray-500">
-                                    Digunakan untuk carian lokasi yang lebih tepat di Google Maps
-                                </p>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="form-label">
+                                        Google Maps <span className="text-gray-400 font-normal">- Optional</span>
+                                    </Label>
+                                    <Input
+                                        value={googleMapsInput}
+                                        onChange={(e) => setGoogleMapsInput(e.target.value)}
+                                        placeholder="Masukkan URL, Nama Masjid, atau Koordinat (Lat, Lng)"
+                                        className="form-input"
+                                    />
+                                    <p className="text-xs text-gray-500">
+                                        Sistem akan mengesan format URL, Nama, atau Koordinat secara automatik.
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="space-y-2">

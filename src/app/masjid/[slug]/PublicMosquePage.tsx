@@ -70,7 +70,7 @@ export function PublicMosquePage({
                         <span className="text-sm font-bold tracking-wide">Portal Rasmi Masjid</span>
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-black text-gray-900 mb-6 leading-[0.9] tracking-tight">
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-black text-gray-900 mb-6 leading-[1.17] tracking-tight">
                         {mosque.name}
                     </h1>
 
@@ -491,23 +491,46 @@ export function PublicMosquePage({
 
                         {/* Right: Map */}
                         <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all">
-                            {mosque.latitude && mosque.longitude ? (
-                                <iframe
-                                    src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3983.5!2d${mosque.longitude}!3d${mosque.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2smy!4v1`}
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0, minHeight: "400px" }}
-                                    allowFullScreen
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    title={`Lokasi ${mosque.name}`}
-                                />
-                            ) : (
-                                <div className="w-full h-full min-h-[400px] bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                    <MapPin size={48} strokeWidth={1} className="mb-4" />
-                                    <p className="font-medium">Lokasi peta tidak tersedia</p>
-                                </div>
-                            )}
+                            {(() => {
+                                let mapSrc = "";
+                                if (mosque.google_maps_url) {
+                                    // If it's already an embed URL, use it directly
+                                    if (mosque.google_maps_url.includes("google.com/maps/embed")) {
+                                        mapSrc = mosque.google_maps_url;
+                                    } else {
+                                        // Otherwise treat as a query
+                                        mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.google_maps_url)}&output=embed`;
+                                    }
+                                } else if (mosque.google_maps_name) {
+                                    mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.google_maps_name)}&output=embed`;
+                                } else if (mosque.latitude && mosque.longitude) {
+                                    mapSrc = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3983.5!2d${mosque.longitude}!3d${mosque.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2smy!4v1`;
+                                } else if (mosque.address) {
+                                    mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mosque.address)}&output=embed`;
+                                }
+
+                                if (mapSrc) {
+                                    return (
+                                        <iframe
+                                            src={mapSrc}
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0, minHeight: "400px" }}
+                                            allowFullScreen
+                                            loading="lazy"
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            title={`Lokasi ${mosque.name}`}
+                                        />
+                                    );
+                                }
+
+                                return (
+                                    <div className="w-full h-full min-h-[400px] bg-gray-100 flex flex-col items-center justify-center text-gray-400">
+                                        <MapPin size={48} strokeWidth={1} className="mb-4" />
+                                        <p className="font-medium">Lokasi peta tidak tersedia</p>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>

@@ -62,7 +62,7 @@ interface OnboardingData {
     brand_color: string;
     // Step 3
     address: string;
-    google_maps_name: string;
+    google_maps_location: string;
     phone: string;
     whatsapp_link: string;
     email: string;
@@ -87,7 +87,7 @@ const initialData: OnboardingData = {
     about_text: "",
     brand_color: "#4F46E5",
     address: "",
-    google_maps_name: "",
+    google_maps_location: "",
     phone: "",
     whatsapp_link: "",
     email: "",
@@ -217,6 +217,20 @@ export default function OnboardingPage() {
                 return;
             }
 
+            // Parse google maps location
+            const { google_maps_url, google_maps_name, latitude, longitude } = (function parseLocation(input: string) {
+                if (!input) return { google_maps_url: null, google_maps_name: null, latitude: null, longitude: null };
+                const trimmed = input.trim();
+                if (trimmed.startsWith("http") || trimmed.includes("google.com/maps") || trimmed.includes("maps.app.goo.gl")) {
+                    return { google_maps_url: trimmed, google_maps_name: null, latitude: null, longitude: null };
+                }
+                const coordMatch = trimmed.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
+                if (coordMatch) {
+                    return { google_maps_url: null, google_maps_name: null, latitude: parseFloat(coordMatch[1]), longitude: parseFloat(coordMatch[2]) };
+                }
+                return { google_maps_url: null, google_maps_name: trimmed, latitude: null, longitude: null };
+            })(data.google_maps_location);
+
             // Create mosque
             const { data: mosque, error: mosqueError } = await supabase
                 .from("mosques")
@@ -233,7 +247,10 @@ export default function OnboardingPage() {
                     about_text: data.about_text || null,
                     brand_color: data.brand_color || "#4F46E5",
                     address: data.address,
-                    google_maps_name: data.google_maps_name || null,
+                    google_maps_name,
+                    google_maps_url,
+                    latitude,
+                    longitude,
                     phone: data.phone || null,
                     email: data.email || null,
                     whatsapp_link: data.whatsapp_link || null,
@@ -659,19 +676,21 @@ export default function OnboardingPage() {
                             <p className="text-gray-600 mt-1">Cara jemaah menghubungi masjid</p>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label className="form-label">
-                                Nama di Google Maps <span className="text-gray-400 font-normal">(Sekiranya Ada) - Optional</span>
-                            </Label>
-                            <Input
-                                placeholder="cth: Masjid Al-Hidayah (Official)"
-                                value={data.google_maps_name}
-                                onChange={(e) => updateData("google_maps_name", e.target.value)}
-                                className="form-input"
-                            />
-                            <p className="text-xs text-gray-500">
-                                Digunakan untuk carian lokasi yang lebih tepat di Google Maps
-                            </p>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="form-label">
+                                    Google Maps <span className="text-gray-400 font-normal">- Optional</span>
+                                </Label>
+                                <Input
+                                    placeholder="Masukkan URL, Nama Masjid, atau Koordinat (Lat, Lng)"
+                                    value={data.google_maps_location}
+                                    onChange={(e) => updateData("google_maps_location", e.target.value)}
+                                    className="form-input"
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Sistem akan mengesan format URL, Nama, atau Koordinat secara automatik untuk paparan peta yang tepat.
+                                </p>
+                            </div>
                         </div>
 
                         <div className="space-y-2">

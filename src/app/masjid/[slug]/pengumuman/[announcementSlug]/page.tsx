@@ -6,7 +6,7 @@ import { Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Metadata } from "next";
-import { ShareButton } from "../_components/ShareButton";
+import { ShareButton } from "../../_components/ShareButton";
 import { StructuredData } from "@/components/StructuredData";
 import { generateArticleSchema } from "@/lib/structuredData";
 import { constructTenantMetadata } from "@/lib/seo";
