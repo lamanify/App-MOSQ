@@ -573,24 +573,30 @@ export default function TetapanPage() {
                                     { id: "iqamah_asar", label: "Asar" },
                                     { id: "iqamah_maghrib", label: "Maghrib" },
                                     { id: "iqamah_isyak", label: "Isyak" },
-                                ].map((prayer) => (
-                                    <div key={prayer.id} className="space-y-2 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                                        <Label className="form-label text-gray-900">{prayer.label} (Minit)</Label>
-                                        <div className="relative group">
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                max="60"
-                                                value={formData[prayer.id as keyof MosqueUpdate] ?? 10}
-                                                onChange={(e) => updateField(prayer.id as keyof MosqueUpdate, parseInt(e.target.value) || 0)}
-                                                className="form-input text-lg font-bold h-12 pr-12 focus:border-orange-500 focus:ring-orange-500"
-                                            />
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
-                                                min
+                                ].map((prayer) => {
+                                    const field = prayer.id as keyof MosqueUpdate;
+                                    const rawValue = formData[field];
+                                    const value = typeof rawValue === "number" ? rawValue : 10;
+
+                                    return (
+                                        <div key={prayer.id} className="space-y-2 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                                            <Label className="form-label text-gray-900">{prayer.label} (Minit)</Label>
+                                            <div className="relative group">
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    max="60"
+                                                    value={value}
+                                                    onChange={(e) => updateField(field, parseInt(e.target.value) || 0)}
+                                                    className="form-input text-lg font-bold h-12 pr-12 focus:border-orange-500 focus:ring-orange-500"
+                                                />
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
+                                                    min
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
 
