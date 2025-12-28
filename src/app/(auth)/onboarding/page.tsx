@@ -18,6 +18,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 import { STATES, getZonesByState, type Zone } from "@/lib/zones";
 import { Check, ChevronLeft, ChevronRight, Loader2, Shuffle } from "lucide-react";
+import { resolveGoogleMapsLink } from "@/app/actions/google-maps";
 
 // Predefined taglines for randomization
 const TAGLINE_OPTIONS = [
@@ -191,6 +192,7 @@ export default function OnboardingPage() {
         }
     }
 
+
     async function handleComplete() {
         if (!userId) {
             toast.error("Sesi tamat. Sila log masuk semula.");
@@ -217,10 +219,43 @@ export default function OnboardingPage() {
                 return;
             }
 
+            let resolvedInput = data.google_maps_location;
+            if (data.google_maps_location.includes("maps.app.goo.gl")) {
+                resolvedInput = await resolveGoogleMapsLink(data.google_maps_location);
+            }
+
             // Parse google maps location
             const { google_maps_url, google_maps_name, latitude, longitude } = (function parseLocation(input: string) {
                 if (!input) return { google_maps_url: null, google_maps_name: null, latitude: null, longitude: null };
                 const trimmed = input.trim();
+
+                // Check for Google Maps Place URL (Resolved)
+                if (trimmed.includes("google.com/maps/place")) {
+                    // Try to extract coordinates from @lat,lng
+                    const coordMatch = trimmed.match(/@([-+]?[\d.]+),([-+]?[\d.]+)/);
+                    let lat = null;
+                    let lng = null;
+                    let name = null;
+
+                    if (coordMatch) {
+                        lat = parseFloat(coordMatch[1]);
+                        lng = parseFloat(coordMatch[2]);
+                    }
+
+                    // Try to extract name from /place/NAME/
+                    const nameMatch = trimmed.match(/\/place\/([^/]+)\//);
+                    if (nameMatch) {
+                        name = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
+                    }
+
+                    return {
+                        google_maps_url: trimmed,
+                        google_maps_name: name,
+                        latitude: lat,
+                        longitude: lng
+                    };
+                }
+
                 if (trimmed.startsWith("http") || trimmed.includes("google.com/maps") || trimmed.includes("maps.app.goo.gl")) {
                     return { google_maps_url: trimmed, google_maps_name: null, latitude: null, longitude: null };
                 }
@@ -229,7 +264,7 @@ export default function OnboardingPage() {
                     return { google_maps_url: null, google_maps_name: null, latitude: parseFloat(coordMatch[1]), longitude: parseFloat(coordMatch[2]) };
                 }
                 return { google_maps_url: null, google_maps_name: trimmed, latitude: null, longitude: null };
-            })(data.google_maps_location);
+            })(resolvedInput);
 
             // Create mosque
             const { data: mosque, error: mosqueError } = await supabase
