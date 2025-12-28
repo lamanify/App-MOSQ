@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 
 // Helper to build tenant subdomain URL
@@ -8,7 +8,10 @@ function getTenantUrl(slug: string, path: string = ''): string {
     return `${protocol}://${slug}.${baseDomain}${path}`;
 }
 
-export default async function sitemap({ params }: { params: Promise<{ slug: string }> }): Promise<MetadataRoute.Sitemap> {
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ slug: string }> }
+) {
     const slug = (await params).slug;
     const supabase = createAdminClient();
 
@@ -21,13 +24,12 @@ export default async function sitemap({ params }: { params: Promise<{ slug: stri
         .single();
 
     if (mosqueError || !mosque) {
-        return [];
+        return new NextResponse('Mosque not found', { status: 404 });
     }
 
-    const lastMod = mosque.updated_at ? new Date(mosque.updated_at) : new Date();
-    const sitemapEntries: MetadataRoute.Sitemap = [];
+    const lastMod = mosque.updated_at ? new Date(mosque.updated_at).toISOString() : new Date().toISOString();
 
-    // 1. Static Pages for this Tenant
+    // Static Pages for this Tenant
     const staticPaths = [
         { path: '', changeFrequency: 'daily', priority: 1.0 },
         { path: '/pengumuman', changeFrequency: 'daily', priority: 0.8 },
@@ -35,18 +37,23 @@ export default async function sitemap({ params }: { params: Promise<{ slug: stri
         { path: '/ajk', changeFrequency: 'monthly', priority: 0.6 },
         { path: '/dana', changeFrequency: 'monthly', priority: 0.7 },
         { path: '/hubungi-kami', changeFrequency: 'monthly', priority: 0.6 },
-    ] as const;
+    ];
 
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+
+    // Add static pages
     staticPaths.forEach(({ path, changeFrequency, priority }) => {
-        sitemapEntries.push({
-            url: getTenantUrl(slug, path),
-            lastModified: lastMod,
-            changeFrequency,
-            priority,
-        });
+        xml += `
+  <url>
+    <loc>${getTenantUrl(slug, path)}</loc>
+    <lastmod>${lastMod}</lastmod>
+    <changefreq>${changeFrequency}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
     });
 
-    // 2. Fetch Active Announcements
+    // Fetch Active Announcements
     const { data: announcements } = await supabase
         .from('announcements')
         .select('slug, created_at')
@@ -57,17 +64,19 @@ export default async function sitemap({ params }: { params: Promise<{ slug: stri
     if (announcements) {
         announcements.forEach((announcement) => {
             if (announcement.slug) {
-                sitemapEntries.push({
-                    url: getTenantUrl(slug, `/pengumuman/${announcement.slug}`),
-                    lastModified: announcement.created_at ? new Date(announcement.created_at) : new Date(),
-                    changeFrequency: 'weekly',
-                    priority: 0.7,
-                });
+                const date = announcement.created_at ? new Date(announcement.created_at).toISOString() : lastMod;
+                xml += `
+  <url>
+    <loc>${getTenantUrl(slug, `/pengumuman/${announcement.slug}`)}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
             }
         });
     }
 
-    // 3. Fetch Published Events
+    // Fetch Published Events
     const { data: events } = await supabase
         .from('events')
         .select('slug, created_at')
@@ -78,15 +87,25 @@ export default async function sitemap({ params }: { params: Promise<{ slug: stri
     if (events) {
         events.forEach((event) => {
             if (event.slug) {
-                sitemapEntries.push({
-                    url: getTenantUrl(slug, `/aktiviti/${event.slug}`),
-                    lastModified: event.created_at ? new Date(event.created_at) : new Date(),
-                    changeFrequency: 'weekly',
-                    priority: 0.7,
-                });
+                const date = event.created_at ? new Date(event.created_at).toISOString() : lastMod;
+                xml += `
+  <url>
+    <loc>${getTenantUrl(slug, `/aktiviti/${event.slug}`)}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
             }
         });
     }
 
-    return sitemapEntries;
+    xml += `
+</urlset>`;
+
+    return new NextResponse(xml, {
+        headers: {
+            'Content-Type': 'application/xml',
+            'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=43200',
+        },
+    });
 }
