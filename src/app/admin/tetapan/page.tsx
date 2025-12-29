@@ -17,9 +17,8 @@ import {
 import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 import { STATES, getZonesByState, type Zone } from "@/lib/zones";
-import { Loader2, Save, Building2, CreditCard, Globe, Phone, Palette, Shuffle, Clock } from "lucide-react";
+import { Loader2, Save, Building2, CreditCard, Globe, Phone, Palette, Shuffle, Clock, Info } from "lucide-react";
 import { revalidateMosqueData } from "@/app/actions/mosque";
-import { resolveGoogleMapsLink } from "@/app/actions/google-maps";
 
 // Predefined taglines for randomization
 const TAGLINE_OPTIONS = [
@@ -133,101 +132,15 @@ export default function TetapanPage() {
         setSaving(true);
         const supabase = createClient();
 
-        let resolvedInput = googleMapsInput;
-        if (googleMapsInput.includes("maps.app.goo.gl")) {
-            resolvedInput = await resolveGoogleMapsLink(googleMapsInput);
-        }
 
-        // Smart parse google maps input
-        const { google_maps_url, google_maps_name, latitude, longitude } = (function parseLocation(input: string) {
-            if (!input) return { google_maps_url: null, google_maps_name: null, latitude: null, longitude: null };
-            const trimmed = input.trim();
-
-            // Handle Google Maps Query URLs (e.g. maps.google.com?q=...)
-            if (trimmed.includes("google.com") && trimmed.includes("q=")) {
-                try {
-                    const url = new URL(trimmed);
-                    const q = url.searchParams.get("q");
-                    if (q) {
-                        // Check if q is coordinates
-                        const coordMatch = q.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
-                        if (coordMatch) {
-                            return {
-                                google_maps_url: trimmed,
-                                google_maps_name: null,
-                                latitude: parseFloat(coordMatch[1]),
-                                longitude: parseFloat(coordMatch[2])
-                            };
-                        }
-                        // Otherwise treat q as name
-                        // Also check if there's a specific 'll' (latlong) param which might be more accurate
-                        const ll = url.searchParams.get("ll");
-                        let lat = null;
-                        let lng = null;
-                        if (ll) {
-                            const llMatch = ll.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
-                            if (llMatch) {
-                                lat = parseFloat(llMatch[1]);
-                                lng = parseFloat(llMatch[2]);
-                            }
-                        }
-
-                        return {
-                            google_maps_url: trimmed,
-                            google_maps_name: q.replace(/\+/g, " "),
-                            latitude: lat,
-                            longitude: lng
-                        };
-                    }
-                } catch (e) {
-                    console.error("Error parsing URL params", e);
-                }
-            }
-
-            // Check for Google Maps Place URL (Resolved)
-            if (trimmed.includes("google.com/maps/place")) {
-                // Try to extract coordinates from @lat,lng
-                const coordMatch = trimmed.match(/@([-+]?[\d.]+),([-+]?[\d.]+)/);
-                let lat = null;
-                let lng = null;
-                let name = null;
-
-                if (coordMatch) {
-                    lat = parseFloat(coordMatch[1]);
-                    lng = parseFloat(coordMatch[2]);
-                }
-
-                // Try to extract name from /place/NAME/
-                const nameMatch = trimmed.match(/\/place\/([^/]+)\//);
-                if (nameMatch) {
-                    name = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
-                }
-
-                return {
-                    google_maps_url: trimmed,
-                    google_maps_name: name, // We set the name if found
-                    latitude: lat,
-                    longitude: lng
-                };
-            }
-
-            if (trimmed.startsWith("http") || trimmed.includes("google.com/maps") || trimmed.includes("maps.app.goo.gl")) {
-                return { google_maps_url: trimmed, google_maps_name: null, latitude: null, longitude: null };
-            }
-            const coordMatch = trimmed.match(/^([-+]?[\d.]+)[,\s]+([-+]?[\d.]+)$/);
-            if (coordMatch) {
-                return { google_maps_url: null, google_maps_name: null, latitude: parseFloat(coordMatch[1]), longitude: parseFloat(coordMatch[2]) };
-            }
-            return { google_maps_url: null, google_maps_name: trimmed, latitude: null, longitude: null };
-        })(resolvedInput);
+        // Simple Google Maps name assignment (text only)
+        const google_maps_name = googleMapsInput?.trim() || null;
 
         const updatedData = {
             ...formData,
-            google_maps_url,
-            google_maps_name: google_maps_name || formData.google_maps_name, // keep existing name if not extracted
-            latitude,
-            longitude
+            google_maps_name
         };
+
 
         try {
             const { error } = await supabase
@@ -470,17 +383,41 @@ export default function TetapanPage() {
                         <div className="space-y-4">
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="form-label">
-                                        Google Maps <span className="text-gray-400 font-normal">- Optional</span>
-                                    </Label>
+                                    <div className="flex items-center gap-2">
+                                        <Label className="form-label">
+                                            Nama Lokasi Google Maps <span className="text-gray-400 font-normal">- Optional</span>
+                                        </Label>
+                                        <button
+                                            type="button"
+                                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+                                            onClick={() => {
+                                                const modal = document.createElement('div');
+                                                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                                                modal.onclick = () => modal.remove();
+                                                modal.innerHTML = `
+                                                    <div class="bg-white rounded-lg p-4 max-w-2xl max-h-[90vh] overflow-auto" onclick="event.stopPropagation()">
+                                                        <div class="flex justify-between items-center mb-4">
+                                                            <h3 class="text-lg font-semibold">Contoh: Cara Dapatkan Nama Lokasi</h3>
+                                                            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">✕</button>
+                                                        </div>
+                                                        <img src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766984676/Screenshot_at_Dec_29_13-03-29_rpad1a.png" alt="Contoh Google Maps" class="w-full rounded" />
+                                                    </div>
+                                                `;
+                                                document.body.appendChild(modal);
+                                            }}
+                                        >
+                                            <Info className="w-4 h-4" />
+                                            Lihat Contoh sini
+                                        </button>
+                                    </div>
                                     <Input
                                         value={googleMapsInput}
                                         onChange={(e) => setGoogleMapsInput(e.target.value)}
-                                        placeholder="Masukkan URL, Nama Masjid, atau Koordinat (Lat, Lng)"
+                                        placeholder="Contoh: Masjid Negara"
                                         className="form-input"
                                     />
                                     <p className="text-xs text-gray-500">
-                                        Sistem akan mengesan format URL, Nama, atau Koordinat secara automatik.
+                                        Nama lokasi masjid di Google Maps. Sila masukkan teks sahaja, tiada URL.
                                     </p>
                                 </div>
                             </div>
