@@ -18,6 +18,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 import { STATES, getZonesByState, type Zone } from "@/lib/zones";
 import { Check, ChevronLeft, ChevronRight, Loader2, Shuffle, Info } from "lucide-react";
+import { trackSubscribe } from "@/lib/meta-conversions";
 
 // Predefined taglines for randomization
 const TAGLINE_OPTIONS = [
@@ -281,6 +282,14 @@ export default function OnboardingPage() {
             }
 
             toast.success("Tahniah! Laman web masjid anda telah dicipta!");
+
+            // Track successful onboarding for Meta Conversions API
+            trackSubscribe({
+                email: data.email || undefined,
+                userId: userId,
+                mosqueName: data.name,
+            });
+
             router.push("/admin");
             router.refresh();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

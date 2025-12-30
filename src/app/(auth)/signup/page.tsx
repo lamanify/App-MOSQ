@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { trackViewContent, trackCompleteRegistration } from "@/lib/meta-conversions";
 
 export default function SignupPage() {
     const router = useRouter();
@@ -19,6 +20,11 @@ export default function SignupPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // Track page view for Meta Conversions API
+    useEffect(() => {
+        trackViewContent();
+    }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -57,6 +63,13 @@ export default function SignupPage() {
             }
 
             if (data.user) {
+                // Track successful registration for Meta Conversions API
+                trackCompleteRegistration({
+                    email: email,
+                    firstName: name,
+                    userId: data.user.id,
+                });
+
                 toast.success("Akaun berjaya didaftarkan!");
                 router.push("/onboarding");
                 router.refresh();
