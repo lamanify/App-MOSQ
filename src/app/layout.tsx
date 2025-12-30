@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import { Toaster } from "sonner";
+import { FacebookPixel } from "@/components/FacebookPixel";
 import "./globals.css";
 
 // Default MOSQ branding for SEO
@@ -75,6 +76,7 @@ export default function RootLayout({
   return (
     <html lang="ms" suppressHydrationWarning>
       <body className={`${inter.variable} ${outfit.variable} font-sans antialiased`} suppressHydrationWarning>
+        <FacebookPixel pixelId={process.env.META_PIXEL_ID} />
         {children}
         <Toaster
           position="top-center"

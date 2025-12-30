@@ -26,6 +26,13 @@ interface EventData {
         fbc?: string; // _fbc cookie
         external_id?: string;
         country?: string;
+        phone?: string;
+        zp?: string; // zip/postal code
+        db?: string; // date of birth (YYYYMMDD)
+        ln?: string; // last name
+        ct?: string; // city
+        st?: string; // state/region
+        fb_login_id?: string;
     };
     custom_data?: Record<string, unknown>;
 }
@@ -75,6 +82,27 @@ export async function POST(request: NextRequest) {
         if (user_data.country) {
             hashedUserData.country = hashData(user_data.country);
         }
+        if (user_data.phone) {
+            // Remove all non-numeric characters for phone normalization
+            const normalizedPhone = user_data.phone.replace(/\D/g, "");
+            hashedUserData.ph = hashData(normalizedPhone);
+        }
+        if (user_data.zp) {
+            hashedUserData.zp = hashData(user_data.zp);
+        }
+        if (user_data.db) {
+            // DOB format should be YYYYMMDD
+            hashedUserData.db = hashData(user_data.db.replace(/\D/g, ""));
+        }
+        if (user_data.ln) {
+            hashedUserData.ln = hashData(user_data.ln);
+        }
+        if (user_data.ct) {
+            hashedUserData.ct = hashData(user_data.ct);
+        }
+        if (user_data.st) {
+            hashedUserData.st = hashData(user_data.st);
+        }
 
         // Non-hashed fields
         if (clientIp !== "unknown") {
@@ -87,6 +115,9 @@ export async function POST(request: NextRequest) {
         }
         if (user_data.fbc) {
             hashedUserData.fbc = user_data.fbc;
+        }
+        if (user_data.fb_login_id) {
+            hashedUserData.fb_login_id = user_data.fb_login_id;
         }
 
         // Build event payload

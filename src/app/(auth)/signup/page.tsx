@@ -63,10 +63,16 @@ export default function SignupPage() {
             }
 
             if (data.user) {
+                // Split name into first and last name for better matching
+                const nameParts = name.trim().split(" ");
+                const firstName = nameParts[0];
+                const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : undefined;
+
                 // Track successful registration for Meta Conversions API
                 trackCompleteRegistration({
                     email: email,
-                    firstName: name,
+                    firstName: firstName,
+                    lastName: lastName,
                     userId: data.user.id,
                 });
 

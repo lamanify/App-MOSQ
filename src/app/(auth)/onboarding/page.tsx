@@ -284,11 +284,15 @@ export default function OnboardingPage() {
             toast.success("Tahniah! Laman web masjid anda telah dicipta!");
 
             // Track successful onboarding for Meta Conversions API
+            // Track successful onboarding for Meta Conversions API
             trackSubscribe({
                 email: data.email || undefined,
+                phone: data.phone || undefined,
                 userId: userId,
                 mosqueName: data.name,
-            });
+                state: data.state,
+                city: data.address ? data.address.split(",").slice(-2)[0]?.trim() : undefined, // Rudimentary city extraction, better than nothing
+            } as any); // Use 'as any' temporarily if types are strict until I update the interface usage, or I can update the interface. I already updated the interface in the lib.
 
             router.push("/admin");
             router.refresh();

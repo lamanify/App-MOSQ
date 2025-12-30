@@ -38,7 +38,14 @@ function getCurrentUrl(): string {
 interface UserData {
     email?: string;
     firstName?: string;
+    lastName?: string;
+    phone?: string;
     externalId?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    dateOfBirth?: string; // YYYYMMDD
+    fbLoginId?: string;
 }
 
 interface TrackEventOptions {
@@ -65,7 +72,14 @@ async function trackEvent(options: TrackEventOptions): Promise<void> {
                 user_data: {
                     email: userData.email,
                     fn: userData.firstName,
+                    ln: userData.lastName,
+                    phone: userData.phone,
                     external_id: userData.externalId,
+                    ct: userData.city,
+                    st: userData.state,
+                    zp: userData.zip,
+                    db: userData.dateOfBirth,
+                    fb_login_id: userData.fbLoginId,
                     country: "my", // Malaysia
                     ...cookies,
                 },
@@ -83,14 +97,36 @@ async function trackEvent(options: TrackEventOptions): Promise<void> {
 }
 
 /**
- * Track when user views the registration/signup page
+ * Track when user views the registration/signup page (or any content)
  */
-export async function trackViewContent(): Promise<void> {
+export async function trackViewContent(userData?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    userId?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    dateOfBirth?: string;
+    fbLoginId?: string;
+}): Promise<void> {
     await trackEvent({
         eventName: "ViewContent",
+        userData: userData ? {
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            phone: userData.phone,
+            externalId: userData.userId,
+            city: userData.city,
+            state: userData.state,
+            zip: userData.zip,
+            dateOfBirth: userData.dateOfBirth,
+            fbLoginId: userData.fbLoginId,
+        } : undefined,
         customData: {
-            content_name: "Signup Page",
-            content_category: "Registration",
+            content_name: "Page View", // Generic default
         },
     });
 }
@@ -101,6 +137,8 @@ export async function trackViewContent(): Promise<void> {
 export async function trackCompleteRegistration(userData: {
     email: string;
     firstName?: string;
+    lastName?: string;
+    phone?: string;
     userId?: string;
 }): Promise<void> {
     await trackEvent({
@@ -108,6 +146,8 @@ export async function trackCompleteRegistration(userData: {
         userData: {
             email: userData.email,
             firstName: userData.firstName,
+            lastName: userData.lastName,
+            phone: userData.phone,
             externalId: userData.userId,
         },
         customData: {
@@ -122,6 +162,8 @@ export async function trackCompleteRegistration(userData: {
 export async function trackSubscribe(userData: {
     email?: string;
     firstName?: string;
+    lastName?: string;
+    phone?: string;
     userId?: string;
     mosqueName?: string;
 }): Promise<void> {
@@ -130,6 +172,8 @@ export async function trackSubscribe(userData: {
         userData: {
             email: userData.email,
             firstName: userData.firstName,
+            lastName: userData.lastName,
+            phone: userData.phone,
             externalId: userData.userId,
         },
         customData: {
