@@ -76,6 +76,21 @@ export default function SignupPage() {
                     userId: data.user.id,
                 });
 
+                // Trigger n8n webhook via Supabase Edge Function
+                // Fire and forget - don't block the UI
+                supabase.functions.invoke("send-webhook", {
+                    body: {
+                        name: name,
+                        email: email,
+                        phone: null, // Phone not collected at signup
+                        mosqueName: null, // Mosque name not collected at signup
+                        isTest: false, // Set to true for testing
+                    },
+                }).then(({ error }) => {
+                    if (error) console.error("Webhook trigger failed:", error);
+                    else console.log("Webhook triggered successfully");
+                });
+
                 toast.success("Akaun berjaya didaftarkan!");
                 router.push("/onboarding");
                 router.refresh();

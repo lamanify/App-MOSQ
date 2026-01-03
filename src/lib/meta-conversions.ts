@@ -45,6 +45,24 @@ function getCurrentUrl(): string {
     return window.location.href;
 }
 
+// Get test event code from URL or localStorage
+function getTestEventCode(): string | undefined {
+    if (typeof window === "undefined") return undefined;
+
+    // Check URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromUrl = urlParams.get("test_event_code");
+
+    if (codeFromUrl) {
+        // Save to localStorage for subsequent events/pages
+        localStorage.setItem("META_TEST_EVENT_CODE", codeFromUrl);
+        return codeFromUrl;
+    }
+
+    // Fallback to localStorage
+    return localStorage.getItem("META_TEST_EVENT_CODE") || undefined;
+}
+
 interface UserData {
     email?: string;
     firstName?: string;
@@ -70,6 +88,7 @@ async function trackEvent(options: TrackEventOptions): Promise<void> {
     const { eventName, userData = {}, customData } = options;
     const eventId = generateEventId();
     const cookies = getMetaCookies();
+    const testEventCode = getTestEventCode();
 
     try {
         const response = await fetch("/api/meta-conversions", {
@@ -97,6 +116,7 @@ async function trackEvent(options: TrackEventOptions): Promise<void> {
                     ...cookies,
                 },
                 custom_data: customData,
+                test_event_code: testEventCode,
             }),
         });
 

@@ -36,6 +36,7 @@ interface EventData {
         fb_login_id?: string;
     };
     custom_data?: Record<string, unknown>;
+    test_event_code?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body: EventData = await request.json();
-        const { event_name, event_id, event_source_url, user_data, custom_data } = body;
+        const { event_name, event_id, event_source_url, user_data, custom_data, test_event_code } = body;
 
         // Validate required fields
         if (!event_name || !event_id) {
@@ -137,6 +138,7 @@ export async function POST(request: NextRequest) {
                     ...(custom_data && { custom_data }),
                 },
             ],
+            ...(test_event_code && { test_event_code }),
         };
 
         // Send to Meta Conversions API

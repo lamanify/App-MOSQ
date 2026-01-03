@@ -382,44 +382,44 @@ export default function TetapanPage() {
                     <div className="space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Label className="form-label">
-                                            Nama Lokasi Google Maps <span className="text-gray-400 font-normal">- Optional</span>
-                                        </Label>
-                                        <button
-                                            type="button"
-                                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
-                                            onClick={() => {
-                                                const modal = document.createElement('div');
-                                                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-                                                modal.onclick = () => modal.remove();
-                                                modal.innerHTML = `
-                                                    <div class="bg-white rounded-lg p-4 max-w-2xl max-h-[90vh] overflow-auto" onclick="event.stopPropagation()">
-                                                        <div class="flex justify-between items-center mb-4">
-                                                            <h3 class="text-lg font-semibold">Contoh: Cara Dapatkan Nama Lokasi</h3>
-                                                            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">✕</button>
-                                                        </div>
-                                                        <img src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766984676/Screenshot_at_Dec_29_13-03-29_rpad1a.png" alt="Contoh Google Maps" class="w-full rounded" />
+                                <Label className="form-label">
+                                    Nama Lokasi Google Maps <span className="text-gray-400 font-normal">- Optional</span>
+                                </Label>
+                                <Input
+                                    value={googleMapsInput}
+                                    onChange={(e) => setGoogleMapsInput(e.target.value)}
+                                    placeholder="Contoh: Masjid Negara"
+                                    className="form-input"
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Nama lokasi masjid di Google Maps. Sila masukkan teks sahaja, tiada URL.
+                                </p>
+                                <button
+                                    type="button"
+                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm mt-1"
+                                    onClick={() => {
+                                        const modal = document.createElement('div');
+                                        modal.className = 'fixed inset-0 flex items-center justify-center z-50 p-4';
+                                        modal.onclick = () => modal.remove();
+                                        modal.innerHTML = `
+                                                <div class="bg-white rounded-2xl p-4 max-w-2xl max-h-[90vh] border border-gray-200 shadow-2xl overflow-auto animate-in fade-in zoom-in duration-200" onclick="event.stopPropagation()">
+                                                    <div class="flex justify-between items-center mb-4">
+                                                        <h3 class="text-lg font-bold">Contoh: Cara Dapatkan Nama Lokasi</h3>
+                                                        <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 bg-gray-100 p-1 rounded-full transition-colors">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                        </button>
                                                     </div>
-                                                `;
-                                                document.body.appendChild(modal);
-                                            }}
-                                        >
-                                            <Info className="w-4 h-4" />
-                                            Lihat Contoh sini
-                                        </button>
-                                    </div>
-                                    <Input
-                                        value={googleMapsInput}
-                                        onChange={(e) => setGoogleMapsInput(e.target.value)}
-                                        placeholder="Contoh: Masjid Negara"
-                                        className="form-input"
-                                    />
-                                    <p className="text-xs text-gray-500">
-                                        Nama lokasi masjid di Google Maps. Sila masukkan teks sahaja, tiada URL.
-                                    </p>
-                                </div>
+                                                    <div class="rounded-xl overflow-hidden border border-gray-100">
+                                                        <img src="https://res.cloudinary.com/debi0yfq9/image/upload/v1766984676/Screenshot_at_Dec_29_13-03-29_rpad1a.png" alt="Contoh Google Maps" class="w-full" />
+                                                    </div>
+                                                </div>
+                                            `;
+                                        document.body.appendChild(modal);
+                                    }}
+                                >
+                                    <Info className="w-4 h-4" />
+                                    Lihat Contoh sini
+                                </button>
                             </div>
 
                             <div className="space-y-2">
