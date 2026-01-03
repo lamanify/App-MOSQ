@@ -32,6 +32,7 @@ interface EventData {
         ln?: string; // last name
         ct?: string; // city
         st?: string; // state/region
+        ge?: string; // gender 'm' or 'f'
         fb_login_id?: string;
     };
     custom_data?: Record<string, unknown>;
@@ -102,6 +103,9 @@ export async function POST(request: NextRequest) {
         }
         if (user_data.st) {
             hashedUserData.st = hashData(user_data.st);
+        }
+        if (user_data.ge) {
+            hashedUserData.ge = hashData(user_data.ge);
         }
 
         // Non-hashed fields

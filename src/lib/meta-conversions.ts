@@ -10,7 +10,7 @@ export function generateEventId(): string {
     return `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 }
 
-// Get Meta cookies from browser
+// Get Meta cookies or URL parameters from browser
 function getMetaCookies(): { fbp?: string; fbc?: string } {
     if (typeof document === "undefined") return {};
 
@@ -23,10 +23,20 @@ function getMetaCookies(): { fbp?: string; fbc?: string } {
         {} as Record<string, string>
     );
 
-    return {
-        fbp: cookies["_fbp"],
-        fbc: cookies["_fbc"],
-    };
+    let fbp = cookies["_fbp"];
+    let fbc = cookies["_fbc"];
+
+    // If fbc cookie is missing, try to get fbclid from URL
+    if (!fbc && typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fbclid = urlParams.get("fbclid");
+        if (fbclid) {
+            // Format: fb.1.{timestamp}.{fbclid}
+            fbc = `fb.1.${Date.now()}.${fbclid}`;
+        }
+    }
+
+    return { fbp, fbc };
 }
 
 // Get current page URL
@@ -44,6 +54,8 @@ interface UserData {
     city?: string;
     state?: string;
     zip?: string;
+    country?: string;
+    gender?: "m" | "f"; // Meta expects 'm' or 'f'
     dateOfBirth?: string; // YYYYMMDD
     fbLoginId?: string;
 }
@@ -80,7 +92,8 @@ async function trackEvent(options: TrackEventOptions): Promise<void> {
                     zp: userData.zip,
                     db: userData.dateOfBirth,
                     fb_login_id: userData.fbLoginId,
-                    country: "my", // Malaysia
+                    country: userData.country || "my", // Default to Malaysia
+                    ge: userData.gender,
                     ...cookies,
                 },
                 custom_data: customData,
@@ -140,6 +153,11 @@ export async function trackCompleteRegistration(userData: {
     lastName?: string;
     phone?: string;
     userId?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
+    fbLoginId?: string;
 }): Promise<void> {
     await trackEvent({
         eventName: "CompleteRegistration",
@@ -149,6 +167,11 @@ export async function trackCompleteRegistration(userData: {
             lastName: userData.lastName,
             phone: userData.phone,
             externalId: userData.userId,
+            city: userData.city,
+            state: userData.state,
+            zip: userData.zip,
+            country: userData.country,
+            fbLoginId: userData.fbLoginId,
         },
         customData: {
             status: "success",
@@ -165,7 +188,14 @@ export async function trackSubscribe(userData: {
     lastName?: string;
     phone?: string;
     userId?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
+    gender?: "m" | "f";
+    dateOfBirth?: string;
     mosqueName?: string;
+    fbLoginId?: string;
 }): Promise<void> {
     await trackEvent({
         eventName: "Subscribe",
@@ -175,6 +205,13 @@ export async function trackSubscribe(userData: {
             lastName: userData.lastName,
             phone: userData.phone,
             externalId: userData.userId,
+            city: userData.city,
+            state: userData.state,
+            zip: userData.zip,
+            country: userData.country,
+            gender: userData.gender,
+            dateOfBirth: userData.dateOfBirth,
+            fbLoginId: userData.fbLoginId,
         },
         customData: {
             subscription_type: "mosque_published",

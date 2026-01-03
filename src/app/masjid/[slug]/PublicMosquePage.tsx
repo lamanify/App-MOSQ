@@ -52,7 +52,7 @@ export function PublicMosquePage({
             <PublicHeader mosque={mosque} />
 
             {/* Immersive Hero Section */}
-            <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-white">
+            <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-white pb-32">
                 <div className="absolute inset-0 overflow-hidden">
                     <Image
                         src={mosque.hero_image_url || "https://res.cloudinary.com/debi0yfq9/image/upload/v1766630810/APP_1_vti8y3.webp"}

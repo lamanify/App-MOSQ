@@ -4,6 +4,7 @@ import { PublicMosquePage } from "./PublicMosquePage";
 import { StructuredData } from "@/components/StructuredData";
 import { generateWebPageSchema, generateWebSiteSchema, combineSchemas } from "@/lib/structuredData";
 import { constructTenantMetadata } from "@/lib/seo";
+import { MetaTracker } from "@/components/meta/MetaTracker";
 import {
     getCachedMosqueBySlug,
     getCachedMosqueMetadata,
@@ -76,6 +77,14 @@ export default async function MosquePage({ params }: Props) {
     return (
         <>
             <StructuredData data={jsonLd} />
+            <MetaTracker
+                contentName={mosque.name}
+                userData={{
+                    city: mosque.state, // Using state as city for broader tracking if address is complex
+                    state: mosque.state,
+                    country: "my",
+                }}
+            />
             <PublicMosquePage
                 mosque={mosque}
                 announcements={announcements}
